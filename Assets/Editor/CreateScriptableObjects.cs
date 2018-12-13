@@ -21,6 +21,16 @@ public class CreateScriptableObjects : MonoBehaviour {
 		return createAsset<PayloadData>();
 	}
 
+	[MenuItem("Assets/Create/Destination")]
+	public static DestinationData createDestinationData() {
+		return createAsset<DestinationData>();
+	}
+
+	[MenuItem("Assets/Create/Data Registry")]
+	public static Registry createRegistry() {
+		return createAsset<Registry>();
+	}
+
 	private static T createAsset<T> () where T : ScriptableObject {
 		T asset = ScriptableObject.CreateInstance<T> ();
 		string path = createPath(asset);
