@@ -6,5 +6,5 @@ public class GameState : ScriptableObject {
     public string playerName = "Sergei";
     public float funds = 0;
     public Dictionary<string, int> progressFlags = new Dictionary<string, int>();
-    public List<MissionData> mission = new List<MissionData>();
+    public List<ActiveMission> missions = new List<ActiveMission>();
 }
