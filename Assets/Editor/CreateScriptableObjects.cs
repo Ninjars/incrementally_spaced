@@ -7,8 +7,18 @@ using UnityEngine;
 public class CreateScriptableObjects : MonoBehaviour {
 
 	[MenuItem("Assets/Create/Game State")]
-	public static GameState createGamewState() {
+	public static GameState createGameState() {
 		return createAsset<GameState>();
+	}
+
+	[MenuItem("Assets/Create/Rocket")]
+	public static RocketData createRocketData() {
+		return createAsset<RocketData>();
+	}
+
+	[MenuItem("Assets/Create/Payload")]
+	public static PayloadData createPayloadData() {
+		return createAsset<PayloadData>();
 	}
 
 	private static T createAsset<T> () where T : ScriptableObject {

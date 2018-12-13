@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PayloadData : ScriptableObject {
+    [Tooltip("User facing name of the payload")]
+    public string payloadName;
     [Tooltip("Payload weight, which affects the power of rocket required for the mission")]
     public int weight;
     [Tooltip("Cost to launch this payload")]
