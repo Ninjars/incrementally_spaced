@@ -7,10 +7,12 @@ public class PayloadData : ScriptableObject {
     public string payloadName;
     [Tooltip("Payload weight, which affects the power of rocket required for the mission")]
     public int weight;
-    [Tooltip("Cost to launch this payload")]
-    public int cost;
-    [Tooltip("Increase in funds on successful mission")]
-    public int reward;
+    [Tooltip("Funds received for launching mission")]
+    public int launchValue;
+    [Tooltip("Bonus for successful mission")]
+    public int successBonus;
+    [Tooltip("Destinations this payload can be delivered to")]
+    public List<DestinationData> validDestinations;
     [Tooltip("Add or increment these values in the game state")]
     public List<string> completionFlags;
     [Tooltip("Game state flag conditions required to use this payload")]
