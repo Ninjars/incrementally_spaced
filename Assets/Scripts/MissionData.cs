@@ -19,4 +19,12 @@ public class MissionData : ScriptableObject {
     public bool isValid() {
         return rocketData.power - payloadData.weight >= destinationData.requiredPower;
     }
+
+    internal static MissionData create(RocketData rocket, PayloadData payload, DestinationData destination) {
+        var data = ScriptableObject.CreateInstance<MissionData>();
+        data.rocketData = rocket;
+        data.payloadData = payload;
+        data.destinationData = destination;
+        return data;
+    }
 }
