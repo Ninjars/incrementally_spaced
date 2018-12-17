@@ -12,10 +12,11 @@ public class ListItemUI : MonoBehaviour {
     public TMP_Text detail3;
     public Image image;
 
-    public void setData(string name, string one, string two, string three) {
+    public void setData(string name, Sprite icon, string one, string two, string three) {
         nameView.text = name;
         detail1.text = one;
         detail2.text = two;
         detail3.text = three;
+        image.sprite = icon;
     }
 }

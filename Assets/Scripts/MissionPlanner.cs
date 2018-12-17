@@ -25,6 +25,15 @@ public class MissionPlanner : MonoBehaviour {
 	public RectTransform detailsList;
 	public Button launchButton;
 	private WipMission plannedMission;
+    private ToggleGroup rocketToggleGroup;
+    private ToggleGroup payloadToggleGroup;
+    private ToggleGroup destinationToggleGroup;
+
+	void Awake() {
+		rocketToggleGroup = rocketList.GetComponent<ToggleGroup>();
+		payloadToggleGroup = payloadList.GetComponent<ToggleGroup>();
+		destinationToggleGroup = destinationList.GetComponent<ToggleGroup>();
+	}
 
 	void OnEnable() {
 		plannedMission = new WipMission();
@@ -32,22 +41,20 @@ public class MissionPlanner : MonoBehaviour {
 	}
 
 	void Start() {
-		var rocketToggleGroup = rocketList.GetComponent<ToggleGroup>();
-		foreach (var rocket in registry.rockets) {
-			addItem(rocketList, rocketToggleGroup, rocket.name, "Power: " + rocket.power, "Cost: " + rocket.launchCost, null, (isToggled) => setSelectedRocket(rocket, isToggled));
+		foreach (var rocket in registry.rockets.OrderBy(arg => arg.power)) {
+			addItem(rocketList, rocketToggleGroup, rocket.icon, rocket.rocketName, "Power: " + rocket.power, "Cost: " + rocket.launchCost, null, (isToggled) => setSelectedRocket(rocket, isToggled));
 		}
-		var payloadToggleGroup = payloadList.GetComponent<ToggleGroup>();
-		foreach (var payload in registry.payloads) {
-			addItem(payloadList, payloadToggleGroup, payload.name, "Weight: " + payload.weight, "Value: " + payload.launchValue, "Bonus: " + payload.successBonus, (isToggled) => setSelectedPayload(payload, isToggled));
+		foreach (var payload in registry.payloads.OrderBy(arg => arg.weight)) {
+			addItem(payloadList, payloadToggleGroup, payload.icon, payload.payloadName, "Weight: " + payload.weight, "Value: " + payload.launchValue, "Bonus: " + payload.successBonus, (isToggled) => setSelectedPayload(payload, isToggled));
 		}
 		plannedMission = new WipMission();
 		updatePlan();
 	}
 
-	private void addItem(RectTransform parent, ToggleGroup group, string name, string one, string two, string three, UnityAction<Boolean> call) {
+	private void addItem(RectTransform parent, ToggleGroup group, Sprite icon, string name, string one, string two, string three, UnityAction<Boolean> call) {
 		ListItemUI item = Instantiate(listItem);
 		item.transform.SetParent(parent, false);
-		item.setData(name, one, two, three);
+		item.setData(name, icon, one, two, three);
 		var toggle = item.GetComponent<Toggle>();
 		toggle.onValueChanged.AddListener(call);
 		toggle.group = group;
@@ -69,16 +76,17 @@ public class MissionPlanner : MonoBehaviour {
 		}
 		var destinations = getAvailableDestinations(plannedMission.rocket, plannedMission.payload);
 		
-		var destinationToggleGroup = destinationList.GetComponent<ToggleGroup>();
 		foreach (var destination in destinations) {
-			addItem(destinationList, destinationToggleGroup, destination.name, "Required Power: " + destination.requiredPower, "Duration: " + destination.baseMissionDuration, null, (isToggled) => setSelectedDestination(destination, isToggled));
+			addItem(destinationList, destinationToggleGroup, destination.icon, destination.displayName, "Required Power: " + destination.requiredPower, "Duration: " + destination.baseMissionDuration, null, (isToggled) => setSelectedDestination(destination, isToggled));
 		}
     }
 
     private IEnumerable<DestinationData> getAvailableDestinations(RocketData rocket, PayloadData payload) {
 		if (rocket == null || payload == null) return Enumerable.Empty<DestinationData>();
         int excessRocketPower = rocket.power - payload.weight;
-        return registry.destinations.Where(destination => destination.requiredPower <= excessRocketPower);
+        return registry.destinations
+				.Where(destination => payload.validDestinations.Contains(destination) && destination.requiredPower <= excessRocketPower)
+				.OrderBy(arg => arg.requiredPower);
     }
 
     private void setSelectedPayload(PayloadData data, bool isToggled) {

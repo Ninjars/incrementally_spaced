@@ -17,4 +17,5 @@ public class PayloadData : ScriptableObject {
     public List<string> completionFlags;
     [Tooltip("Game state flag conditions required to use this payload")]
     public List<StatePrecondition> preconditions;
+    public Sprite icon;
 }

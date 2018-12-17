@@ -11,7 +11,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9cb27df67dbe4c408b7ee8cccdfe4e2, type: 3}
   m_Name: Military Payload
   m_EditorClassIdentifier: 
-  payloadName: Military Satellite
+  payloadName: Spy Satellite
   weight: 5
   launchValue: 0
   successBonus: 20
@@ -19,3 +19,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7874af2ee8ecf48fa9818c8b58ff8b71, type: 2}
   completionFlags: []
   preconditions: []
+  icon: {fileID: 21300000, guid: 6be9088b28758452ea07923185c980e7, type: 3}
