@@ -6,8 +6,10 @@ public class ActiveMission : ScriptableObject {
     public MissionData missionData;
     public float startTime;
 
-    public ActiveMission(MissionData mission, float realtimeSinceStartup) {
-        this.missionData = mission;
-        this.startTime = realtimeSinceStartup;
+    internal static ActiveMission create(MissionData mission, float realtimeSinceStartup) {
+        var obj = ScriptableObject.CreateInstance<ActiveMission>();
+        obj.missionData = mission;
+        obj.startTime = realtimeSinceStartup;
+        return obj;
     }
 }

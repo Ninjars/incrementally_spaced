@@ -27,7 +27,7 @@ public class MissionControl : MonoBehaviour {
     public void launchMission(MissionData mission) {
         missionPlanner.gameObject.SetActive(false);
         startPlanningButton.gameObject.SetActive(true);
-        gameState.missions.Add(new ActiveMission(mission, Time.realtimeSinceStartup));
+        gameState.missions.Add(ActiveMission.create(mission, Time.realtimeSinceStartup));
         gameState.funds -= mission.getCost();
     }
 
