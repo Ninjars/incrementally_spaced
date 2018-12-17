@@ -35,7 +35,7 @@ public class MissionPlanner : MonoBehaviour {
 		destinationToggleGroup = destinationList.GetComponent<ToggleGroup>();
 	}
 
-	void OnEnable() {
+    void OnEnable() {
 		plannedMission = new WipMission();
 		updatePlan();
 	}
@@ -153,7 +153,10 @@ public class MissionPlanner : MonoBehaviour {
 			launchButton.interactable = false;
 		} else {
 			launchButton.interactable = true;
-			launchButton.onClick.AddListener(() => missionControl.launchMission(missionData));
+			launchButton.onClick.AddListener(() => {
+				turnOffToggles();
+				missionControl.launchMission(missionData);
+			});
 		}
 	}
 
@@ -166,6 +169,13 @@ public class MissionPlanner : MonoBehaviour {
 	}
 
 	public void cancel() {
+		turnOffToggles();
 		missionControl.cancelPlanningMission();
+	}
+
+	private void turnOffToggles() {
+		rocketToggleGroup.SetAllTogglesOff();
+		payloadToggleGroup.SetAllTogglesOff();
+		destinationToggleGroup.SetAllTogglesOff();
 	}
 }
