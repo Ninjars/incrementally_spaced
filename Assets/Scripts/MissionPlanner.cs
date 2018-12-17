@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -35,10 +36,6 @@ public class MissionPlanner : MonoBehaviour {
 		foreach (var payload in registry.payloads) {
 			addItem(payloadList, payloadToggleGroup, payload.name, "Weight: " + payload.weight, "Value: " + payload.launchValue, "Bonus: " + payload.successBonus, (isToggled) => setSelectedPayload(payload, isToggled));
 		}
-		var destinationToggleGroup = destinationList.GetComponent<ToggleGroup>();
-		foreach (var destination in registry.destinations) {
-			addItem(destinationList, destinationToggleGroup, destination.name, "Power: " + destination.requiredPower, "Duration: " + destination.baseMissionDuration, null, (isToggled) => setSelectedDestination(destination, isToggled));
-		}
 		plannedMission = new WipMission();
 		updatePlan();
 	}
@@ -58,15 +55,35 @@ public class MissionPlanner : MonoBehaviour {
 		} else {
 			if (plannedMission.rocket == data) plannedMission.rocket = null;
 		}
+		updateDestinations();
 		updatePlan();
 	}
 
-	private void setSelectedPayload(PayloadData data, bool isToggled) {
+    private void updateDestinations() {
+        foreach (Transform child in destinationList.transform) {
+			GameObject.Destroy(child.gameObject);
+		}
+		var destinations = getAvailableDestinations(plannedMission.rocket, plannedMission.payload);
+		
+		var destinationToggleGroup = destinationList.GetComponent<ToggleGroup>();
+		foreach (var destination in destinations) {
+			addItem(destinationList, destinationToggleGroup, destination.name, "Power: " + destination.requiredPower, "Duration: " + destination.baseMissionDuration, null, (isToggled) => setSelectedDestination(destination, isToggled));
+		}
+    }
+
+    private IEnumerable<DestinationData> getAvailableDestinations(RocketData rocket, PayloadData payload) {
+		if (rocket == null || payload == null) return Enumerable.Empty<DestinationData>();
+        int excessRocketPower = rocket.power - payload.weight;
+        return registry.destinations.Where(destination => destination.requiredPower <= excessRocketPower);
+    }
+
+    private void setSelectedPayload(PayloadData data, bool isToggled) {
 		if (isToggled) {
 			plannedMission.payload = data;
 		} else {
 			if (plannedMission.payload == data) plannedMission.payload = null;
 		}
+		updateDestinations();
 		updatePlan();
 	}
 
