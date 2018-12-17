@@ -14,11 +14,14 @@ public class MissionPlanner : MonoBehaviour {
 		public DestinationData destination;
 	}
 
+	public GameState gameState;
 	public Registry registry;
 	public ListItemUI listItem;
 	public RectTransform rocketList;
 	public RectTransform payloadList;
 	public RectTransform destinationList;
+	public PlanDetailsItemUI detailsItem;
+	public RectTransform detailsList;
 	public Button launchButton;
 	private WipMission plannedMission;
 
@@ -67,7 +70,7 @@ public class MissionPlanner : MonoBehaviour {
 		
 		var destinationToggleGroup = destinationList.GetComponent<ToggleGroup>();
 		foreach (var destination in destinations) {
-			addItem(destinationList, destinationToggleGroup, destination.name, "Power: " + destination.requiredPower, "Duration: " + destination.baseMissionDuration, null, (isToggled) => setSelectedDestination(destination, isToggled));
+			addItem(destinationList, destinationToggleGroup, destination.name, "Required Power: " + destination.requiredPower, "Duration: " + destination.baseMissionDuration, null, (isToggled) => setSelectedDestination(destination, isToggled));
 		}
     }
 
@@ -108,15 +111,44 @@ public class MissionPlanner : MonoBehaviour {
 		} else {
 			setLaunchStateForMissionData(missionData);
 		}
+		updatePlanDetailsUI(plannedMission);
+	}
+
+	private void updatePlanDetailsUI(WipMission plan) {
+        foreach (Transform child in detailsList.transform) {
+			GameObject.Destroy(child.gameObject);
+		}
+		var plannedCost = (plan.rocket == null ? 0 : plan.rocket.launchCost)
+						 - (plan.payload == null ? 0 : plan.payload.launchValue);
+		var missionBonus = plan.payload == null ? 0 : plan.payload.successBonus;
+		addDetail(detailsList, "Available Funds:", gameState.funds.ToString(), true);
+		addDetail(detailsList, "Mission Funds:", (-plannedCost).ToString(), plannedCost <= gameState.funds);
+		if (missionBonus > 0) {
+			addDetail(detailsList, "Success bonus:", missionBonus.ToString(), true);
+		}
+		var power = (plan.rocket == null ? 0 : plan.rocket.power) 
+					- (plan.payload == null ? 0 : plan.payload.weight) 
+					- (plan.destination == null ? 0 : plan.destination.requiredPower);
+		addDetail(detailsList, "Available power:", power.ToString(), power >= 0);
+    }
+
+	private void addDetail(RectTransform parent, string label, string value, bool valid) {
+		PlanDetailsItemUI item = Instantiate(detailsItem);
+		item.transform.SetParent(parent, false);
+		item.setData(label, value, valid);
 	}
 
 	private void setLaunchStateForMissionData(MissionData missionData) {
-		if (!missionData.isValid()) {
+		if (!canLaunchMission(missionData)) {
 			launchButton.interactable = false;
 		} else {
 			launchButton.interactable = true;
 		}
 	}
+
+    public bool canLaunchMission(MissionData mission) {
+        return mission.isValid() && gameState.funds >= mission.getCost();
+    }
 
 	private void setLaunchStateInvalid() {
 		launchButton.interactable = false;
