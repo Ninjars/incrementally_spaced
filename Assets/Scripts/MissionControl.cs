@@ -10,8 +10,11 @@ public class MissionControl : MonoBehaviour {
     public MissionPlanner missionPlanner;
     public Button startPlanningButton;
 
+    private GameState gameState;
+
     void Start() {
         startPlanningButton.onClick.AddListener(() => startPlanningMission());
+        gameState = gameStateProvider.getGameState();
     }
 
     public void startPlanningMission() {
@@ -28,7 +31,6 @@ public class MissionControl : MonoBehaviour {
         missionPlanner.gameObject.SetActive(false);
         startPlanningButton.gameObject.SetActive(true);
         
-		var gameState = gameStateProvider.getGameState();
         gameState.missions.Add(ActiveMission.create(mission, Time.realtimeSinceStartup));
         gameState.funds -= mission.getCost();
         gameState.registerProgress(mission.destinationData.progressionValue);
@@ -40,5 +42,9 @@ public class MissionControl : MonoBehaviour {
         mission.rocketData = rocket;
         mission.destinationData = destination;
         return mission;
+    }
+
+    public void debugAdvanceGameStage() {
+        gameState.registerProgress(gameState.getCurrentProgressValue() + 10);
     }
 }
