@@ -14,7 +14,7 @@ public class MissionPlanner : MonoBehaviour {
 		public DestinationData destination;
 	}
 
-	public GameState gameState;
+	public GameStateProvider gameStateProvider;
 	public Registry registry;
 	public MissionControl missionControl;
 	public ListItemUI listItem;
@@ -130,6 +130,7 @@ public class MissionPlanner : MonoBehaviour {
 		var plannedCost = (plan.rocket == null ? 0 : plan.rocket.launchCost)
 						 - (plan.payload == null ? 0 : plan.payload.launchValue);
 		var missionBonus = plan.payload == null ? 0 : plan.payload.successBonus;
+		var gameState = gameStateProvider.getGameState();
 		addDetail(detailsList, "Available Funds:", gameState.funds.ToString(), true);
 		addDetail(detailsList, "Funds from Launch:", (-plannedCost).ToString(), plannedCost <= gameState.funds);
 		if (missionBonus > 0) {
@@ -161,7 +162,7 @@ public class MissionPlanner : MonoBehaviour {
 	}
 
     public bool canLaunchMission(MissionData mission) {
-        return mission.isValid() && gameState.funds >= mission.getCost();
+        return mission.isValid() && gameStateProvider.getGameState().funds >= mission.getCost();
     }
 
 	private void setLaunchStateInvalid() {

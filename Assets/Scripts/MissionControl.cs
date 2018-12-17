@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class MissionControl : MonoBehaviour {
     public Registry registry;
-    public GameState gameState;
+    public GameStateProvider gameStateProvider;
     public MissionPlanner missionPlanner;
     public Button startPlanningButton;
 
@@ -27,6 +27,8 @@ public class MissionControl : MonoBehaviour {
     public void launchMission(MissionData mission) {
         missionPlanner.gameObject.SetActive(false);
         startPlanningButton.gameObject.SetActive(true);
+        
+		var gameState = gameStateProvider.getGameState();
         gameState.missions.Add(ActiveMission.create(mission, Time.realtimeSinceStartup));
         gameState.funds -= mission.getCost();
     }

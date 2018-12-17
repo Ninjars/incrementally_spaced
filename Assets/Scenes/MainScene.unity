@@ -461,7 +461,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ce3a6934de8344ccaab7cf49c6eb69c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameState: {fileID: 11400000, guid: eaaeafbeae756425b9a6232adccc6eb5, type: 2}
+  gameStateProvider: {fileID: 1730610259}
   registry: {fileID: 11400000, guid: 3cb866d1b8c8d4db6a8662f979935d9b, type: 2}
   missionControl: {fileID: 1730610257}
   listItem: {fileID: 114948066294384718, guid: 068635c872f464537bcf392a457c7d82, type: 2}
@@ -701,6 +701,8 @@ GameObject:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
+  - component: {fileID: 519420033}
+  - component: {fileID: 519420030}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -715,6 +717,31 @@ AudioListener:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_Enabled: 1
+--- !u!114 &519420030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 363fd8443a31c4fba82edb66c097119a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameState: {fileID: 0}
+  cameraPositions:
+  - progress: 0
+    x: 0
+    size: 5
+  - progress: 1
+    x: 3.5
+    size: 2
+  - progress: 2
+    x: 4.6
+    size: 3
+  - progress: 3
+    x: 5.15
+    size: 3.5
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -769,6 +796,24 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &519420033
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: ea9502b2d27044a09bd6424d44d9694e, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &608854500
 GameObject:
   m_ObjectHideFlags: 0
@@ -2642,6 +2687,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1730610258}
   - component: {fileID: 1730610257}
+  - component: {fileID: 1730610259}
   m_Layer: 0
   m_Name: MissionControl
   m_TagString: Untagged
@@ -2661,7 +2707,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   registry: {fileID: 11400000, guid: 3cb866d1b8c8d4db6a8662f979935d9b, type: 2}
-  gameState: {fileID: 11400000, guid: eaaeafbeae756425b9a6232adccc6eb5, type: 2}
+  gameStateProvider: {fileID: 1730610259}
   missionPlanner: {fileID: 246131788}
   startPlanningButton: {fileID: 629809294}
 --- !u!4 &1730610258
@@ -2677,6 +2723,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1730610259
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1730610256}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bef2e88a6d9f14c86848588606ddf3ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  templateState: {fileID: 11400000, guid: eaaeafbeae756425b9a6232adccc6eb5, type: 2}
 --- !u!1001 &1779061488
 Prefab:
   m_ObjectHideFlags: 0
