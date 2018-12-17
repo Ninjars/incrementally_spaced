@@ -31,6 +31,7 @@ public class MissionControl : MonoBehaviour {
 		var gameState = gameStateProvider.getGameState();
         gameState.missions.Add(ActiveMission.create(mission, Time.realtimeSinceStartup));
         gameState.funds -= mission.getCost();
+        gameState.registerProgress(mission.destinationData.progressionValue);
     }
 
     public MissionData buildMission(RocketData rocket, PayloadData payload, DestinationData destination) {

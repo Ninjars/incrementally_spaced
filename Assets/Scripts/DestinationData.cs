@@ -9,4 +9,5 @@ public class DestinationData : ScriptableObject {
     [Tooltip("Duration in seconds of mission to this destination with minimum power requirement")]
     public float baseMissionDuration;
     public Sprite icon;
+    public int progressionValue;
 }

@@ -1,12 +1,10 @@
 using UnityEngine;
 
-public class StatePrecondition : ScriptableObject {
-    public string requiredFlag;
-    public int minCount;
+[System.Serializable]
+public class ProgressPrecondition {
+    public int requiredProgress;
 
     public bool isMet(GameState gameState) {
-        int flagCount = -1;
-        gameState.progressFlags.TryGetValue(requiredFlag, out flagCount);
-        return flagCount >= minCount;
+        return gameState.getCurrentProgressValue() >= requiredProgress;
     }
 }
