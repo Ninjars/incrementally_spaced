@@ -16,6 +16,7 @@ public class MissionPlanner : MonoBehaviour {
 
 	public GameState gameState;
 	public Registry registry;
+	public MissionControl missionControl;
 	public ListItemUI listItem;
 	public RectTransform rocketList;
 	public RectTransform payloadList;
@@ -122,9 +123,9 @@ public class MissionPlanner : MonoBehaviour {
 						 - (plan.payload == null ? 0 : plan.payload.launchValue);
 		var missionBonus = plan.payload == null ? 0 : plan.payload.successBonus;
 		addDetail(detailsList, "Available Funds:", gameState.funds.ToString(), true);
-		addDetail(detailsList, "Mission Funds:", (-plannedCost).ToString(), plannedCost <= gameState.funds);
+		addDetail(detailsList, "Funds from Launch:", (-plannedCost).ToString(), plannedCost <= gameState.funds);
 		if (missionBonus > 0) {
-			addDetail(detailsList, "Success bonus:", missionBonus.ToString(), true);
+			addDetail(detailsList, "Success Bonus Funds:", missionBonus.ToString(), true);
 		}
 		var power = (plan.rocket == null ? 0 : plan.rocket.power) 
 					- (plan.payload == null ? 0 : plan.payload.weight) 
@@ -141,8 +142,10 @@ public class MissionPlanner : MonoBehaviour {
 	private void setLaunchStateForMissionData(MissionData missionData) {
 		if (!canLaunchMission(missionData)) {
 			launchButton.interactable = false;
+			launchButton.onClick.RemoveAllListeners();
 		} else {
 			launchButton.interactable = true;
+			launchButton.onClick.AddListener(() => missionControl.launchMission(missionData));
 		}
 	}
 
@@ -152,5 +155,9 @@ public class MissionPlanner : MonoBehaviour {
 
 	private void setLaunchStateInvalid() {
 		launchButton.interactable = false;
+	}
+
+	public void cancel() {
+		missionControl.cancelPlanningMission();
 	}
 }
