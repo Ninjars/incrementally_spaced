@@ -148,9 +148,9 @@ public class MissionPlanner : MonoBehaviour {
 	}
 
 	private void setLaunchStateForMissionData(MissionData missionData) {
+		launchButton.onClick.RemoveAllListeners();
 		if (!canLaunchMission(missionData)) {
 			launchButton.interactable = false;
-			launchButton.onClick.RemoveAllListeners();
 		} else {
 			launchButton.interactable = true;
 			launchButton.onClick.AddListener(() => missionControl.launchMission(missionData));
