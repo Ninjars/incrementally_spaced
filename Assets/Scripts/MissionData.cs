@@ -27,4 +27,8 @@ public class MissionData : ScriptableObject {
         data.destinationData = destination;
         return data;
     }
+
+    public override string ToString() {
+        return rocketData.name + " " + payloadData.name + " " + destinationData.name + " cost: " + getCost() + " isValid: " + isValid();
+    }
 }
