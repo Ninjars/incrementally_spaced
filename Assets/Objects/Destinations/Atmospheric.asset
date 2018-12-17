@@ -9,7 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f3e0fc3f9544458f96c942a7e757a5f, type: 3}
-  m_Name: Low Orbit
+  m_Name: Atmospheric
   m_EditorClassIdentifier: 
-  requiredPower: 2
+  requiredPower: 1
   baseMissionDuration: 5

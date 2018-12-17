@@ -16,6 +16,7 @@ MonoBehaviour:
   launchValue: 5
   successBonus: 0
   validDestinations:
+  - {fileID: 11400000, guid: 405223cfd52cf4d08b7a1fa2d9ce7e80, type: 2}
   - {fileID: 11400000, guid: 7874af2ee8ecf48fa9818c8b58ff8b71, type: 2}
   completionFlags: []
   preconditions: []
