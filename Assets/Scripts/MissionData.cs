@@ -7,12 +7,28 @@ public class MissionData : ScriptableObject {
     public PayloadData payloadData;
     public DestinationData destinationData;
     
-    public float durationSeconds() {
+    public float getDurationSeconds() {
         float powerFactor = Mathf.Min(3, Mathf.Max(1, (rocketData.power - payloadData.weight) / (float) destinationData.requiredPower));
         return (destinationData.baseMissionDuration / powerFactor);
     }
 
+    public int getCost() {
+        return rocketData.launchCost - payloadData.launchValue;
+    }
+
     public bool isValid() {
         return rocketData.power - payloadData.weight >= destinationData.requiredPower;
+    }
+
+    internal static MissionData create(RocketData rocket, PayloadData payload, DestinationData destination) {
+        var data = ScriptableObject.CreateInstance<MissionData>();
+        data.rocketData = rocket;
+        data.payloadData = payload;
+        data.destinationData = destination;
+        return data;
+    }
+
+    public override string ToString() {
+        return rocketData.name + " " + payloadData.name + " " + destinationData.name + " cost: " + getCost() + " isValid: " + isValid();
     }
 }

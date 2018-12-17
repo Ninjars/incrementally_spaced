@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9cb27df67dbe4c408b7ee8cccdfe4e2, type: 3}
+  m_Name: Geolocation Payload
+  m_EditorClassIdentifier: 
+  payloadName: Geolocation Satellite
+  weight: 3
+  launchValue: 5
+  successBonus: 10
+  validDestinations:
+  - {fileID: 11400000, guid: 60d95b3df87834e2f8fb9219021f3971, type: 2}
+  completionFlags: []
+  preconditions: []
+  icon: {fileID: 21300000, guid: 6be9088b28758452ea07923185c980e7, type: 3}
