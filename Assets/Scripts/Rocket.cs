@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Rocket : MonoBehaviour {
-	internal void missionComplete() {
+	internal void onMissionComplete() {
 		Destroy(gameObject);
 	}
 }
