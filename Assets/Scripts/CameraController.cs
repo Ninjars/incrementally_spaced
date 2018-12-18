@@ -22,6 +22,7 @@ public class CameraController : MonoBehaviour {
 
 	void Start() {
 		gameState = gameStateProvider.getGameState();
+		setupAnimation(GameState.GameProgress.BEGINNING);
 	}
 
 	void Update() {
