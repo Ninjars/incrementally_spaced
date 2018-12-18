@@ -10,4 +10,5 @@ public class RocketData : ScriptableObject {
     [Tooltip("Rocket launch power")]
     public int power;
     public Sprite icon;
+    public GameObject rocketObject;
 }
