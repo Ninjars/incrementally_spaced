@@ -35,11 +35,19 @@ public class MissionControl : MonoBehaviour {
         FlightPlan flightPlan = registry.flightPlans.Where(plan => plan.destination == mission.destinationData).First();
         Rocket rocket = GameObject.Instantiate(mission.rocketData.rocketObject);
         
-        var activeMission = new ActiveMission(rocket, mission, Time.realtimeSinceStartup, flightPlan);
-        gameState.missions.Add(activeMission);
+        var activeMission = new ActiveMission(this, rocket, mission, Time.realtimeSinceStartup, flightPlan);
+        gameState.registerActiveMission(activeMission);
         gameState.funds -= mission.getCost();
         gameState.registerProgress(mission.destinationData.progressionValue);
         activeMission.launch();
+    }
+
+    internal void onMissionComplete(ActiveMission activeMission) {
+        activeMission.getRocket().onMissionComplete();
+        var data = activeMission.getMissionData();
+        var completionBonus = data.payloadData.successBonus;
+        gameState.registerMissionCompletion(activeMission);
+        gameState.funds += completionBonus;
     }
 
     public MissionData buildMission(RocketData rocket, PayloadData payload, DestinationData destination) {

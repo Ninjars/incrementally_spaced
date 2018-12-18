@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Name: High Orbit
   m_EditorClassIdentifier: 
   displayName: High Orbit
-  requiredPower: 7
+  requiredPower: 8
   baseMissionDuration: 25
   icon: {fileID: 21300000, guid: 89b99ed423e9d446a9712cd89cdfe19f, type: 3}
   progressionValue: 40

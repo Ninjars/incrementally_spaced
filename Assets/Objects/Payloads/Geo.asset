@@ -9,14 +9,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b9cb27df67dbe4c408b7ee8cccdfe4e2, type: 3}
-  m_Name: Empty Payload
+  m_Name: Geo
   m_EditorClassIdentifier: 
-  payloadName: Test Payload
-  weight: 1
-  launchValue: 1
-  successBonus: 1
+  payloadName: Geolocation Satellite
+  weight: 4
+  launchValue: 20
+  successBonus: 60
   validDestinations:
-  - {fileID: 11400000, guid: 405223cfd52cf4d08b7a1fa2d9ce7e80, type: 2}
+  - {fileID: 11400000, guid: 60d95b3df87834e2f8fb9219021f3971, type: 2}
   completionFlags: []
-  preconditions: []
+  preconditions:
+  - payload: {fileID: 0}
+    count: 0
+    comparison: 0
+    minProgressValue: 30
   icon: {fileID: 21300000, guid: 6be9088b28758452ea07923185c980e7, type: 3}

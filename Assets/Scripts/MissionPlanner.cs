@@ -28,24 +28,24 @@ public class MissionPlanner : MonoBehaviour {
     private ToggleGroup rocketToggleGroup;
     private ToggleGroup payloadToggleGroup;
     private ToggleGroup destinationToggleGroup;
+    private GameState gameState;
 
-	void Awake() {
+    void Awake() {
 		rocketToggleGroup = rocketList.GetComponent<ToggleGroup>();
 		payloadToggleGroup = payloadList.GetComponent<ToggleGroup>();
 		destinationToggleGroup = destinationList.GetComponent<ToggleGroup>();
 	}
 
     void OnEnable() {
+		gameState = gameStateProvider.getGameState();
 		plannedMission = new WipMission();
+		updatePayloads();
 		updatePlan();
 	}
 
 	void Start() {
 		foreach (var rocket in registry.rockets.OrderBy(arg => arg.power)) {
 			addItem(rocketList, rocketToggleGroup, rocket.icon, rocket.rocketName, "Power: " + rocket.power, "Cost: " + rocket.launchCost, null, (isToggled) => setSelectedRocket(rocket, isToggled));
-		}
-		foreach (var payload in registry.payloads.OrderBy(arg => arg.weight)) {
-			addItem(payloadList, payloadToggleGroup, payload.icon, payload.payloadName, "Weight: " + payload.weight, "Value: " + payload.launchValue, "Bonus: " + payload.successBonus, (isToggled) => setSelectedPayload(payload, isToggled));
 		}
 		plannedMission = new WipMission();
 		updatePlan();
@@ -80,6 +80,15 @@ public class MissionPlanner : MonoBehaviour {
 			addItem(destinationList, destinationToggleGroup, destination.icon, destination.displayName, "Required Power: " + destination.requiredPower, "Duration: " + destination.baseMissionDuration, null, (isToggled) => setSelectedDestination(destination, isToggled));
 		}
     }
+
+	private void updatePayloads() {
+        foreach (Transform child in payloadList.transform) {
+			GameObject.Destroy(child.gameObject);
+		}
+		foreach (var payload in registry.payloads.Where(arg => arg.meetsConditions(gameState)).OrderBy(arg => arg.weight)) {
+			addItem(payloadList, payloadToggleGroup, payload.icon, payload.payloadName, "Weight: " + payload.weight, "Value: " + payload.launchValue, "Bonus: " + payload.successBonus, (isToggled) => setSelectedPayload(payload, isToggled));
+		}
+	}
 
     private IEnumerable<DestinationData> getAvailableDestinations(RocketData rocket, PayloadData payload) {
 		if (rocket == null || payload == null) return Enumerable.Empty<DestinationData>();
@@ -130,7 +139,6 @@ public class MissionPlanner : MonoBehaviour {
 		var plannedCost = (plan.rocket == null ? 0 : plan.rocket.launchCost)
 						 - (plan.payload == null ? 0 : plan.payload.launchValue);
 		var missionBonus = plan.payload == null ? 0 : plan.payload.successBonus;
-		var gameState = gameStateProvider.getGameState();
 		addDetail(detailsList, "Available Funds:", gameState.funds.ToString(), true);
 		addDetail(detailsList, "Funds from Launch:", (-plannedCost).ToString(), plannedCost <= gameState.funds);
 		if (missionBonus > 0) {
@@ -162,7 +170,7 @@ public class MissionPlanner : MonoBehaviour {
 	}
 
     public bool canLaunchMission(MissionData mission) {
-        return mission.isValid() && gameStateProvider.getGameState().funds >= mission.getCost();
+        return mission.isValid() && gameState.funds >= mission.getCost();
     }
 
 	private void setLaunchStateInvalid() {

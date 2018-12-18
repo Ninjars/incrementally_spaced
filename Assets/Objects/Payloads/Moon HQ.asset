@@ -9,14 +9,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b9cb27df67dbe4c408b7ee8cccdfe4e2, type: 3}
-  m_Name: Empty Payload
+  m_Name: Moon HQ
   m_EditorClassIdentifier: 
-  payloadName: Test Payload
-  weight: 1
-  launchValue: 1
-  successBonus: 1
+  payloadName: Moon Base Part
+  weight: 30
+  launchValue: 0
+  successBonus: 0
   validDestinations:
-  - {fileID: 11400000, guid: 405223cfd52cf4d08b7a1fa2d9ce7e80, type: 2}
+  - {fileID: 11400000, guid: 578abdee630cd4ac68ed4f2855613765, type: 2}
   completionFlags: []
-  preconditions: []
+  preconditions:
+  - payload: {fileID: 11400000}
+    count: 0
+    comparison: 1
+    minProgressValue: 50
+  - payload: {fileID: 11400000, guid: 6b31ed83311194336bf210e3916dd44a, type: 2}
+    count: 3
+    comparison: 0
+    minProgressValue: 0
   icon: {fileID: 21300000, guid: 6be9088b28758452ea07923185c980e7, type: 3}

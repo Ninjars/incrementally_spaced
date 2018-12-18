@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Name: Atmospheric
   m_EditorClassIdentifier: 
   displayName: Atmospheric Flight
-  requiredPower: 1
-  baseMissionDuration: 5
+  requiredPower: 0
+  baseMissionDuration: 4
   icon: {fileID: 21300000, guid: 89b99ed423e9d446a9712cd89cdfe19f, type: 3}
   progressionValue: 10

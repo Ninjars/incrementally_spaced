@@ -30,13 +30,6 @@ public class CameraController : MonoBehaviour {
 			targetProgress = gameState.getCurrentProgress();
 			setupAnimation(targetProgress);
 		}
-
-		if (Time.time > startTime + animationDuration) {
-			animating = false;
-		}
-		if (animating) {
-			updatePosition();
-		}
 	}
 
 	private void updatePosition() {
@@ -50,14 +43,21 @@ public class CameraController : MonoBehaviour {
 		CameraInfo info = cameraPositions.FirstOrDefault(arg => arg.progress == newProgress);
 		if (info == null) return;
 
-		animating = true;
+		iTween.MoveTo(gameObject, iTween.Hash(
+			"x", info.x,
+			"time", animationDuration,
+			"easetype", iTween.EaseType.easeInOutExpo
+		));
+		iTween.ValueTo(gameObject, iTween.Hash(
+			"from", cam.orthographicSize,
+			"to", info.size,
+			"time", animationDuration,
+			"easetype", iTween.EaseType.easeInOutExpo,
+			"onupdate", "updateCameraSize"
+		));
+	}
 
-		startPosition = transform.position;
-		endPosition = new Vector3(info.x, transform.position.y, transform.position.z);
-
-		startSize = cam.orthographicSize;
-		endSize = info.size;
-
-		startTime = Time.time;
+	public void updateCameraSize(float size) {
+		cam.orthographicSize = size;
 	}
 }

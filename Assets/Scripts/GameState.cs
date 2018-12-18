@@ -11,14 +11,35 @@ public class GameState : ScriptableObject {
     public const int STAGE_MOON = 50;
     public string playerName = "Sergei";
     public float funds = 0;
-    public List<ActiveMission> missions = new List<ActiveMission>();
+    private List<ActiveMission> missions = new List<ActiveMission>();
+    private Dictionary<PayloadData, int> deliveredPayloads = new Dictionary<PayloadData, int>();
 
     private int progressStage = 0;
     private GameProgress currentProgress = GameProgress.BEGINNING;
 
     public void registerProgress(int stage) {
+        Debug.Log("register progress " + stage);
         progressStage = Math.Max(stage, progressStage);
         currentProgress = updateCurrentProgress();
+    }
+
+    public void registerActiveMission(ActiveMission mission) {
+        missions.Add(mission);
+    }
+
+    public void registerMissionCompletion(ActiveMission mission) {
+        missions.Remove(mission);
+        var payload = mission.getMissionData().payloadData;
+        
+        int currentCount;
+        deliveredPayloads.TryGetValue(payload, out currentCount); 
+        deliveredPayloads[payload] = currentCount + 1;
+    }
+
+    public int getDeliveredPayloadCount(PayloadData payload) {
+        int currentCount;
+        deliveredPayloads.TryGetValue(payload, out currentCount); 
+        return currentCount;
     }
 
     public GameProgress getCurrentProgress() {
