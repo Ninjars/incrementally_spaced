@@ -666,7 +666,7 @@ MonoBehaviour:
     x: 0
     size: 5
   - progress: 1
-    x: 3.5
+    x: 3.8
     size: 2
   - progress: 2
     x: 4.6
