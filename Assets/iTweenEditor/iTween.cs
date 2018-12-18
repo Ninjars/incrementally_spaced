@@ -1,4 +1,4 @@
-// Copyright (c) 2011 - 2018 Bob Berkebile (pixelplacment)
+// Copyright (c) 2011 Bob Berkebile (pixelplacment)
 // Please direct any bugs/comments/suggestions to http://pixelplacement.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,23 +34,25 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #region Namespaces
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 #endregion
 
 /// <summary>
-/// <para>Version: 2.0.7</para>	 
+/// <para>Version: 2.0.45</para>	 
 /// <para>Author: Bob Berkebile (http://pixelplacement.com)</para>
 /// <para>Support: http://itween.pixelplacement.com</para>
 /// </summary>
-public class iTween : MonoBehaviour
-{
+public class iTween : MonoBehaviour{
+	
 	#region Variables
-
+	
 	//repository of all living iTweens:
-	public static List<Hashtable> tweens = new List<Hashtable>();
-
+	public static ArrayList tweens = new ArrayList();
+	
+	//camera fade object:
+	private static GameObject cameraFade;
+	
 	//status members (made public for visual troubleshooting in the inspector):
 	public string id, type, method;
 	public iTween.EaseType easeType;
@@ -67,7 +69,7 @@ public class iTween : MonoBehaviour
 	private bool kinematic, isLocal, loop, reverse, wasPaused, physics;
 	private Hashtable tweenArguments;
 	private Space space;
-	private delegate float EasingFunction(float start, float end, float Value);
+	private delegate float EasingFunction(float start, float end, float value);
 	private delegate void ApplyTween();
 	private EasingFunction ease;
 	private ApplyTween apply;
@@ -84,9 +86,6 @@ public class iTween : MonoBehaviour
 
     private float lastRealTime; // Added by PressPlay
     private bool useRealTime; // Added by PressPlay
-	
-	private Transform thisTransform;
-
 
 	/// <summary>
 	/// The type of easing to use based on Robert Penner's open source easing equations (http://www.robertpenner.com/easing_terms_of_use.html).
@@ -195,6 +194,8 @@ public class iTween : MonoBehaviour
 		//update defaults:
 		public static float updateTimePercentage = .05f;
 		public static float updateTime = 1f*updateTimePercentage;
+		//cameraFade defaults:
+		public static int cameraFadeDepth = 999999;
 		//path look ahead amount:
 		public static float lookAhead = .05f;
         public static bool useRealTime = false; // Added by PressPlay
@@ -215,7 +216,155 @@ public class iTween : MonoBehaviour
 	public static void Init(GameObject target){
 		MoveBy(target,Vector3.zero,0);
 	}
-
+	
+	/// <summary>
+	/// Instantly changes the amount(transparency) of a camera fade and then returns it back over time with MINIMUM customization options.
+	/// </summary>
+	/// <param name="amount">
+	/// A <see cref="System.Single"/> or <see cref="System.Double"/> for how transparent the Texture2D that the camera fade uses is.
+	/// </param>
+	/// <param name="time">
+	/// A <see cref="System.Single"/> for the time in seconds the animation will take to complete.
+	/// </param>
+	public static void CameraFadeFrom(float amount, float time){
+		if(cameraFade){
+			CameraFadeFrom(Hash("amount",amount,"time",time));
+		}else{
+			Debug.LogError("iTween Error: You must first add a camera fade object with CameraFadeAdd() before atttempting to use camera fading.");
+		}
+	}
+	
+	/// <summary>
+	/// Instantly changes the amount(transparency) of a camera fade and then returns it back over time with FULL customization options.
+	/// </summary>
+	/// <param name="amount">
+	/// A <see cref="System.Single"/> or <see cref="System.Double"/> for how transparent the Texture2D that the camera fade uses is.
+	/// </param>
+	/// <param name="time">
+	/// A <see cref="System.Single"/> or <see cref="System.Double"/> for the time in seconds the animation will take to complete.
+	/// </param>
+	/// <param name="delay">
+	/// A <see cref="System.Single"/> or <see cref="System.Double"/> for the time in seconds the animation will wait before beginning.
+	/// </param>
+	/// <param name="easetype">
+	/// A <see cref="EaseType"/> or <see cref="System.String"/> for the shape of the easing curve applied to the animation.
+	/// </param>   
+	/// <param name="looptype">
+	/// A <see cref="LoopType"/> or <see cref="System.String"/> for the type of loop to apply once the animation has completed.
+	/// </param>
+	/// <param name="onstart">
+	/// A <see cref="System.String"/> for the name of a function to launch at the beginning of the animation.
+	/// </param>
+	/// <param name="onstarttarget">
+	/// A <see cref="GameObject"/> for a reference to the GameObject that holds the "onstart" method.
+	/// </param>
+	/// <param name="onstartparams">
+	/// A <see cref="System.Object"/> for arguments to be sent to the "onstart" method.
+	/// </param>
+	/// <param name="onupdate"> 
+	/// A <see cref="System.String"/> for the name of a function to launch on every step of the animation.
+	/// </param>
+	/// <param name="onupdatetarget">
+	/// A <see cref="GameObject"/> for a reference to the GameObject that holds the "onupdate" method.
+	/// </param>
+	/// <param name="onupdateparams">
+	/// A <see cref="System.Object"/> for arguments to be sent to the "onupdate" method.
+	/// </param> 
+	/// <param name="oncomplete">
+	/// A <see cref="System.String"/> for the name of a function to launch at the end of the animation.
+	/// </param>
+	/// <param name="oncompletetarget">
+	/// A <see cref="GameObject"/> for a reference to the GameObject that holds the "oncomplete" method.
+	/// </param>
+	/// <param name="oncompleteparams">
+	/// A <see cref="System.Object"/> for arguments to be sent to the "oncomplete" method.
+	/// </param>
+	public static void CameraFadeFrom(Hashtable args){		
+		//establish iTween:
+		if(cameraFade){
+			ColorFrom(cameraFade,args);
+		}else{
+			Debug.LogError("iTween Error: You must first add a camera fade object with CameraFadeAdd() before atttempting to use camera fading.");
+		}
+	}	
+	
+	/// <summary>
+	/// Changes the amount(transparency) of a camera fade over time with MINIMUM customization options.
+	/// </summary>
+	/// <param name="amount">
+	/// A <see cref="System.Single"/> or <see cref="System.Double"/> for how transparent the Texture2D that the camera fade uses is.
+	/// </param>
+	/// <param name="time">
+	/// A <see cref="System.Single"/> for the time in seconds the animation will take to complete.
+	/// </param>
+	public static void CameraFadeTo(float amount, float time){
+		if(cameraFade){
+			CameraFadeTo(Hash("amount",amount,"time",time));
+		}else{
+			Debug.LogError("iTween Error: You must first add a camera fade object with CameraFadeAdd() before atttempting to use camera fading.");
+		}
+	}	
+	
+	/// <summary>
+	/// Changes the amount(transparency) of a camera fade over time with FULL customization options.
+	/// </summary>
+	/// <param name="amount">
+	/// A <see cref="System.Single"/> or <see cref="System.Double"/> for how transparent the Texture2D that the camera fade uses is.
+	/// </param>
+	/// <param name="time">
+	/// A <see cref="System.Single"/> or <see cref="System.Double"/> for the time in seconds the animation will take to complete.
+	/// </param>
+	/// <param name="delay">
+	/// A <see cref="System.Single"/> or <see cref="System.Double"/> for the time in seconds the animation will wait before beginning.
+	/// </param>
+	/// <param name="easetype">
+	/// A <see cref="EaseType"/> or <see cref="System.String"/> for the shape of the easing curve applied to the animation.
+	/// </param>   
+	/// <param name="looptype">
+	/// A <see cref="LoopType"/> or <see cref="System.String"/> for the type of loop to apply once the animation has completed.
+	/// </param>
+	/// <param name="onstart">
+	/// A <see cref="System.String"/> for the name of a function to launch at the beginning of the animation.
+	/// </param>
+	/// <param name="onstarttarget">
+	/// A <see cref="GameObject"/> for a reference to the GameObject that holds the "onstart" method.
+	/// </param>
+	/// <param name="onstartparams">
+	/// A <see cref="System.Object"/> for arguments to be sent to the "onstart" method.
+	/// </param>
+	/// <param name="onupdate"> 
+	/// A <see cref="System.String"/> for the name of a function to launch on every step of the animation.
+	/// </param>
+	/// <param name="onupdatetarget">
+	/// A <see cref="GameObject"/> for a reference to the GameObject that holds the "onupdate" method.
+	/// </param>
+	/// <param name="onupdateparams">
+	/// A <see cref="System.Object"/> for arguments to be sent to the "onupdate" method.
+	/// </param> 
+	/// <param name="oncomplete">
+	/// A <see cref="System.String"/> for the name of a function to launch at the end of the animation.
+	/// </param>
+	/// <param name="oncompletetarget">
+	/// A <see cref="GameObject"/> for a reference to the GameObject that holds the "oncomplete" method.
+	/// </param>
+	/// <param name="oncompleteparams">
+	/// A <see cref="System.Object"/> for arguments to be sent to the "oncomplete" method.
+	/// </param>
+	public static void CameraFadeTo(Hashtable args){
+		/*
+		CameraFadeAdd(Defaults.cameraFadeDepth);
+		
+		//rescale cameraFade just in case screen size has changed to ensure it takes up the full screen:
+		cameraFade.guiTexture.pixelInset=new Rect(0,0,Screen.width,Screen.height);
+		*/
+	
+		if(cameraFade){
+			//establish iTween:
+			ColorTo(cameraFade,args);
+		}else{
+			Debug.LogError("iTween Error: You must first add a camera fade object with CameraFadeAdd() before atttempting to use camera fading.");
+		}
+	}	
 	
 	/// <summary>
 	/// Returns a value to an 'oncallback' method interpolated between the supplied 'from' and 'to' values for application as desired.  Requires an 'onupdate' callback that accepts the same type as the supplied 'from' and 'to' properties.
@@ -304,7 +453,7 @@ public class iTween : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Changes a GameObject's alpha value instantly then returns it to the provided alpha over time with MINIMUM customization options.  Identical to using ColorFrom and using the "a" parameter. 
+	/// Changes a GameObject's alpha value instantly then returns it to the provided alpha over time with MINIMUM customization options.  If a GUIText or GUITexture component is attached, it will become the target of the animation. Identical to using ColorFrom and using the "a" parameter. 
 	/// </summary>
 	/// <param name="target">
 	/// A <see cref="GameObject"/> to be the target of the animation.
@@ -320,7 +469,7 @@ public class iTween : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Changes a GameObject's alpha value instantly then returns it to the provided alpha over time with FULL customization options. Identical to using ColorFrom and using the "a" parameter.
+	/// Changes a GameObject's alpha value instantly then returns it to the provided alpha over time with FULL customization options.  If a GUIText or GUITexture component is attached, it will become the target of the animation. Identical to using ColorFrom and using the "a" parameter.
 	/// </summary>
 	/// <param name="alpha">
 	/// A <see cref="System.Single"/> or <see cref="System.Double"/> for the initial alpha value of the animation.
@@ -375,7 +524,7 @@ public class iTween : MonoBehaviour
 	}		
 	
 	/// <summary>
-	/// Changes a GameObject's alpha value over time with MINIMUM customization options. Identical to using ColorTo and using the "a" parameter.
+	/// Changes a GameObject's alpha value over time with MINIMUM customization options.  If a GUIText or GUITexture component is attached, it will become the target of the animation. Identical to using ColorTo and using the "a" parameter.
 	/// </summary>
 	/// <param name="target">
 	/// A <see cref="GameObject"/> to be the target of the animation.
@@ -391,7 +540,7 @@ public class iTween : MonoBehaviour
 	}	
 
 	/// <summary>
-	/// Changes a GameObject's alpha value over time with FULL customization options. Identical to using ColorTo and using the "a" parameter.
+	/// Changes a GameObject's alpha value over time with FULL customization options.  If a GUIText or GUITexture component is attached, it will become the target of the animation. Identical to using ColorTo and using the "a" parameter.
 	/// </summary>
 	/// <param name="alpha">
 	/// A <see cref="System.Single"/> or <see cref="System.Double"/> for the final alpha value of the animation.
@@ -446,7 +595,7 @@ public class iTween : MonoBehaviour
 	}		
 	
 	/// <summary>
-	/// Changes a GameObject's color values instantly then returns them to the provided properties over time with MINIMUM customization options.
+	/// Changes a GameObject's color values instantly then returns them to the provided properties over time with MINIMUM customization options.  If a GUIText or GUITexture component is attached, it will become the target of the animation.
 	/// </summary>
 	/// <param name="target">
 	/// A <see cref="GameObject"/> to be the target of the animation.
@@ -462,7 +611,7 @@ public class iTween : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Changes a GameObject's color values instantly then returns them to the provided properties over time with FULL customization options.
+	/// Changes a GameObject's color values instantly then returns them to the provided properties over time with FULL customization options.  If a GUIText or GUITexture component is attached, it will become the target of the animation.
 	/// </summary>
 	/// <param name="color">
 	/// A <see cref="Color"/> to change the GameObject's color to.
@@ -546,7 +695,11 @@ public class iTween : MonoBehaviour
 		}
 		
 		//set tempColor and base fromColor:
-		if(target.GetComponent<Renderer>()){
+		if(target.GetComponent(typeof(GUITexture))){
+			tempColor=fromColor=target.GetComponent<GUITexture>().color;	
+		}else if(target.GetComponent(typeof(GUIText))){
+			tempColor=fromColor=target.GetComponent<GUIText>().material.color;
+		}else if(target.GetComponent<Renderer>()){
 			tempColor=fromColor=target.GetComponent<Renderer>().material.color;
 		}else if(target.GetComponent<Light>()){
 			tempColor=fromColor=target.GetComponent<Light>().color;
@@ -580,7 +733,11 @@ public class iTween : MonoBehaviour
 		}
 		
 		//apply fromColor:
-		if(target.GetComponent<Renderer>()){
+		if(target.GetComponent(typeof(GUITexture))){
+			target.GetComponent<GUITexture>().color=fromColor;	
+		}else if(target.GetComponent(typeof(GUIText))){
+			target.GetComponent<GUIText>().material.color=fromColor;
+		}else if(target.GetComponent<Renderer>()){
 			target.GetComponent<Renderer>().material.color=fromColor;
 		}else if(target.GetComponent<Light>()){
 			target.GetComponent<Light>().color=fromColor;
@@ -596,7 +753,7 @@ public class iTween : MonoBehaviour
 	}		
 	
 	/// <summary>
-	/// Changes a GameObject's color values over time with MINIMUM customization options.
+	/// Changes a GameObject's color values over time with MINIMUM customization options.  If a GUIText or GUITexture component is attached, they will become the target of the animation.
 	/// </summary>
 	/// <param name="target">
 	/// A <see cref="GameObject"/> to be the target of the animation.
@@ -612,7 +769,7 @@ public class iTween : MonoBehaviour
 	}
 	
 	/// <summary>
-	/// Changes a GameObject's color values over time with FULL customization options.
+	/// Changes a GameObject's color values over time with FULL customization options.  If a GUIText or GUITexture component is attached, they will become the target of the animation.
 	/// </summary>
 	/// <param name="color">
 	/// A <see cref="Color"/> to change the GameObject's color to.
@@ -780,7 +937,7 @@ public class iTween : MonoBehaviour
 		if(args.Contains("audiosource")){
 			tempAudioSource=(AudioSource)args["audiosource"];
 		}else{
-			if(target.GetComponent<AudioSource>()){
+			if(target.GetComponent(typeof(AudioSource))){
 				tempAudioSource=target.GetComponent<AudioSource>();
 			}else{
 				//throw error if no AudioSource is available:
@@ -3165,7 +3322,13 @@ public class iTween : MonoBehaviour
 		//colors = new Color[3];
 		
 		//from and init to values:
-		if(GetComponent<Renderer>()){
+		if(GetComponent(typeof(GUITexture))){
+			colors = new Color[1,3];
+			colors[0,0] = colors[0,1] = GetComponent<GUITexture>().color;
+		}else if(GetComponent(typeof(GUIText))){
+			colors = new Color[1,3];
+			colors[0,0] = colors[0,1] = GetComponent<GUIText>().material.color;
+		}else if(GetComponent<Renderer>()){
 			colors = new Color[GetComponent<Renderer>().materials.Length,3];
 			for (int i = 0; i < GetComponent<Renderer>().materials.Length; i++) {
 				colors[i,0]=GetComponent<Renderer>().materials[i].GetColor(namedcolorvalue.ToString());
@@ -3234,7 +3397,7 @@ public class iTween : MonoBehaviour
 		if(tweenArguments.Contains("audiosource")){
 			audioSource=(AudioSource)tweenArguments["audiosource"];
 		}else{
-			if(GetComponent<AudioSource>()){
+			if(GetComponent(typeof(AudioSource))){
 				audioSource=GetComponent<AudioSource>();
 			}else{
 				//throw error if no AudioSource is available:
@@ -3260,11 +3423,11 @@ public class iTween : MonoBehaviour
 		if(tweenArguments.Contains("audiosource")){
 			audioSource=(AudioSource)tweenArguments["audiosource"];
 		}else{
-			if(GetComponent<AudioSource>()){
+			if(GetComponent(typeof(AudioSource))){
 				audioSource=GetComponent<AudioSource>();
 			}else{
 				//add and populate AudioSource if one doesn't exist:
-				gameObject.AddComponent<AudioSource>();
+				gameObject.AddComponent(typeof(AudioSource));
 				audioSource=GetComponent<AudioSource>();
 				audioSource.playOnAwake=false;
 				
@@ -3291,16 +3454,16 @@ public class iTween : MonoBehaviour
 		vector3s=new Vector3[3];
 		
 		//from values:
-		vector3s[0]=thisTransform.eulerAngles;
+		vector3s[0]=transform.eulerAngles;
 		
 		//set look:
 		if(tweenArguments.Contains("looktarget")){
 			if (tweenArguments["looktarget"].GetType() == typeof(Transform)) {
 				//transform.LookAt((Transform)tweenArguments["looktarget"]);
-				thisTransform.LookAt((Transform)tweenArguments["looktarget"], (Vector3?)tweenArguments["up"] ?? Defaults.up);
+				transform.LookAt((Transform)tweenArguments["looktarget"], (Vector3?)tweenArguments["up"] ?? Defaults.up);
 			}else if(tweenArguments["looktarget"].GetType() == typeof(Vector3)){
 				//transform.LookAt((Vector3)tweenArguments["looktarget"]);
-				thisTransform.LookAt((Vector3)tweenArguments["looktarget"], (Vector3?)tweenArguments["up"] ?? Defaults.up);
+				transform.LookAt((Vector3)tweenArguments["looktarget"], (Vector3?)tweenArguments["up"] ?? Defaults.up);
 			}
 		}else{
 			Debug.LogError("iTween Error: LookTo needs a 'looktarget' property!");
@@ -3308,8 +3471,8 @@ public class iTween : MonoBehaviour
 		}
 
 		//to values:
-		vector3s[1]=thisTransform.eulerAngles;
-		thisTransform.eulerAngles=vector3s[0];
+		vector3s[1]=transform.eulerAngles;
+		transform.eulerAngles=vector3s[0];
 		
 		//axis restriction:
 		if(tweenArguments.Contains("axis")){
@@ -3368,7 +3531,7 @@ public class iTween : MonoBehaviour
 		//do we need to plot a path to get to the beginning of the supplied path?		
 		bool plotStart;
 		int offset;
-		if(thisTransform.position != suppliedPath[0]){
+		if(transform.position != suppliedPath[0]){
 			if(!tweenArguments.Contains("movetopath") || (bool)tweenArguments["movetopath"]==true){
 				plotStart=true;
 				offset=3;	
@@ -3384,7 +3547,7 @@ public class iTween : MonoBehaviour
 		//build calculated path:
 		vector3s = new Vector3[suppliedPath.Length+offset];
 		if(plotStart){
-			vector3s[1]=thisTransform.position;
+			vector3s[1]=transform.position;
 			offset=2;
 		}else{
 			offset=1;
@@ -3424,9 +3587,9 @@ public class iTween : MonoBehaviour
 		
 		//from values:
 		if (isLocal) {
-			vector3s[0]=vector3s[1]=thisTransform.localPosition;				
+			vector3s[0]=vector3s[1]=transform.localPosition;				
 		}else{
-			vector3s[0]=vector3s[1]=thisTransform.position;
+			vector3s[0]=vector3s[1]=transform.position;
 		}
 		
 		//to values:
@@ -3466,10 +3629,10 @@ public class iTween : MonoBehaviour
 		vector3s=new Vector3[6];
 		
 		//grab starting rotation:
-		vector3s[4] = thisTransform.eulerAngles;
+		vector3s[4] = transform.eulerAngles;
 		
 		//from values:
-		vector3s[0]=vector3s[1]=vector3s[3]=thisTransform.position;
+		vector3s[0]=vector3s[1]=vector3s[3]=transform.position;
 				
 		//to values:
 		if (tweenArguments.Contains("amount")) {
@@ -3487,9 +3650,9 @@ public class iTween : MonoBehaviour
 		}	
 		
 		//calculation for dial in:
-		thisTransform.Translate(vector3s[1],space);
-		vector3s[5] = thisTransform.position;
-		thisTransform.position=vector3s[0];
+		transform.Translate(vector3s[1],space);
+		vector3s[5] = transform.position;
+		transform.position=vector3s[0];
 		
 		//handle orient to path request:
 		if(tweenArguments.Contains("orienttopath") && (bool)tweenArguments["orienttopath"]){
@@ -3508,7 +3671,7 @@ public class iTween : MonoBehaviour
 		vector3s=new Vector3[3];
 		
 		//from values:
-		vector3s[0]=vector3s[1]=thisTransform.localScale;				
+		vector3s[0]=vector3s[1]=transform.localScale;				
 
 		//to values:
 		if (tweenArguments.Contains("scale")) {
@@ -3542,7 +3705,7 @@ public class iTween : MonoBehaviour
 		vector3s=new Vector3[3];
 		
 		//from values:
-		vector3s[0]=vector3s[1]=thisTransform.localScale;				
+		vector3s[0]=vector3s[1]=transform.localScale;				
 
 		//to values:
 		if (tweenArguments.Contains("amount")) {
@@ -3571,7 +3734,7 @@ public class iTween : MonoBehaviour
 		vector3s=new Vector3[3];
 		
 		//from values:
-		vector3s[0]=vector3s[1]=thisTransform.localScale;				
+		vector3s[0]=vector3s[1]=transform.localScale;				
 
 		//to values:
 		if (tweenArguments.Contains("amount")) {
@@ -3601,9 +3764,9 @@ public class iTween : MonoBehaviour
 		
 		//from values:
 		if (isLocal) {
-			vector3s[0]=vector3s[1]=thisTransform.localEulerAngles;				
+			vector3s[0]=vector3s[1]=transform.localEulerAngles;				
 		}else{
-			vector3s[0]=vector3s[1]=thisTransform.eulerAngles;
+			vector3s[0]=vector3s[1]=transform.eulerAngles;
 		}
 		
 		//to values:
@@ -3641,7 +3804,7 @@ public class iTween : MonoBehaviour
 		vector3s=new Vector3[5];
 		
 		//from values:
-		vector3s[0]=vector3s[1]=vector3s[3]=thisTransform.eulerAngles;
+		vector3s[0]=vector3s[1]=vector3s[3]=transform.eulerAngles;
 		
 		//to values:
 		if (tweenArguments.Contains("amount")) {
@@ -3670,7 +3833,7 @@ public class iTween : MonoBehaviour
 		vector3s=new Vector3[4];
 		
 		//from values:
-		vector3s[0]=vector3s[1]=vector3s[3]=thisTransform.eulerAngles;
+		vector3s[0]=vector3s[1]=vector3s[3]=transform.eulerAngles;
 		
 		//to values:
 		if (tweenArguments.Contains("amount")) {
@@ -3699,10 +3862,10 @@ public class iTween : MonoBehaviour
 		vector3s=new Vector3[4];
 		
 		//grab starting rotation:
-		vector3s[3] = thisTransform.eulerAngles;		
+		vector3s[3] = transform.eulerAngles;		
 		
 		//root:
-		vector3s[0]=thisTransform.position;
+		vector3s[0]=transform.position;
 		
 		//amount:
 		if (tweenArguments.Contains("amount")) {
@@ -3725,7 +3888,7 @@ public class iTween : MonoBehaviour
 		vector3s=new Vector3[3];
 		
 		//root:
-		vector3s[0]=thisTransform.localScale;
+		vector3s[0]=transform.localScale;
 		
 		//amount:
 		if (tweenArguments.Contains("amount")) {
@@ -3748,7 +3911,7 @@ public class iTween : MonoBehaviour
 		vector3s=new Vector3[3];
 		
 		//root:
-		vector3s[0]=thisTransform.eulerAngles;
+		vector3s[0]=transform.eulerAngles;
 		
 		//amount:
 		if (tweenArguments.Contains("amount")) {
@@ -3771,10 +3934,10 @@ public class iTween : MonoBehaviour
 		vector3s=new Vector3[5];
 		
 		//grab starting rotation:
-		vector3s[4] = thisTransform.eulerAngles;
+		vector3s[4] = transform.eulerAngles;
 		
 		//from values:
-		vector3s[0]=thisTransform.position;
+		vector3s[0]=transform.position;
 		vector3s[1]=vector3s[3]=Vector3.zero;
 				
 		//to values:
@@ -3798,7 +3961,7 @@ public class iTween : MonoBehaviour
 		vector3s=new Vector3[4];
 		
 		//from values:
-		vector3s[0]=thisTransform.eulerAngles;
+		vector3s[0]=transform.eulerAngles;
 		vector3s[1]=vector3s[3]=Vector3.zero;
 				
 		//to values:
@@ -3822,7 +3985,7 @@ public class iTween : MonoBehaviour
 		vector3s=new Vector3[3];
 		
 		//from values:
-		vector3s[0]=thisTransform.localScale;
+		vector3s[0]=transform.localScale;
 		vector3s[1]=Vector3.zero;
 				
 		//to values:
@@ -3935,7 +4098,13 @@ public class iTween : MonoBehaviour
 		*/
 		
 		//apply:
-		if(GetComponent<Renderer>()){
+		if(GetComponent(typeof(GUITexture))){
+			//guiTexture.color=colors[2];
+			GetComponent<GUITexture>().color=colors[0,2];
+		}else if(GetComponent(typeof(GUIText))){
+			//guiText.material.color=colors[2];
+			GetComponent<GUIText>().material.color=colors[0,2];
+		}else if(GetComponent<Renderer>()){
 			//renderer.material.color=colors[2];
 			for (int i = 0; i < colors.GetLength(0); i++) {
 				GetComponent<Renderer>().materials[i].SetColor(namedcolorvalue.ToString(),colors[i,2]);
@@ -3947,7 +4116,13 @@ public class iTween : MonoBehaviour
 		
 		//dial in:
 		if(percentage==1){
-			if(GetComponent<Renderer>()){
+			if(GetComponent(typeof(GUITexture))){
+				//guiTexture.color=colors[1];
+				GetComponent<GUITexture>().color=colors[0,1];
+			}else if(GetComponent(typeof(GUIText))){
+				//guiText.material.color=colors[1];
+				GetComponent<GUIText>().material.color=colors[0,1];
+			}else if(GetComponent<Renderer>()){
 				//renderer.material.color=colors[1];	
 				for (int i = 0; i < colors.GetLength(0); i++) {
 					GetComponent<Renderer>().materials[i].SetColor(namedcolorvalue.ToString(),colors[i,1]);
@@ -3980,15 +4155,15 @@ public class iTween : MonoBehaviour
 	}
 	
 	void ApplyMoveToPathTargets(){
-		preUpdate = thisTransform.position;
+		preUpdate = transform.position;
 		float t = ease(0,1,percentage);
 		float lookAheadAmount;
 		
 		//clamp easing equation results as "back" will fail since overshoots aren't handled in the Catmull-Rom interpolation:
 		if(isLocal){
-			thisTransform.localPosition=path.Interp(Mathf.Clamp(t,0,1));	
+			transform.localPosition=path.Interp(Mathf.Clamp(t,0,1));	
 		}else{
-			thisTransform.position=path.Interp(Mathf.Clamp(t,0,1));	
+			transform.position=path.Interp(Mathf.Clamp(t,0,1));	
 		}
 		
 		//handle orient to path request:
@@ -4010,18 +4185,17 @@ public class iTween : MonoBehaviour
 		}
 		
 		//need physics?
-		postUpdate=thisTransform.position;
+		postUpdate=transform.position;
 		if(physics){
-			thisTransform.position=preUpdate;
+			transform.position=preUpdate;
 			GetComponent<Rigidbody>().MovePosition(postUpdate);
 		}
 	}
 	
 	void ApplyMoveToTargets(){
 		//record current:
-		preUpdate=thisTransform.position;
+		preUpdate=transform.position;
 			
-		
 		//calculate:
 		vector3s[2].x = ease(vector3s[0].x,vector3s[1].x,percentage);
 		vector3s[2].y = ease(vector3s[0].y,vector3s[1].y,percentage);
@@ -4029,37 +4203,37 @@ public class iTween : MonoBehaviour
 		
 		//apply:	
 		if (isLocal) {
-			thisTransform.localPosition=vector3s[2];
+			transform.localPosition=vector3s[2];
 		}else{
-			thisTransform.position=vector3s[2];
+			transform.position=vector3s[2];
 		}
 			
 		//dial in:
 		if(percentage==1){
 			if (isLocal) {
-				thisTransform.localPosition=vector3s[1];		
+				transform.localPosition=vector3s[1];		
 			}else{
-				thisTransform.position=vector3s[1];
+				transform.position=vector3s[1];
 			}
 		}
 			
 		//need physics?
-		postUpdate=thisTransform.position;
+		postUpdate=transform.position;
 		if(physics){
-			thisTransform.position=preUpdate;
+			transform.position=preUpdate;
 			GetComponent<Rigidbody>().MovePosition(postUpdate);
 		}
 	}	
 	
 	void ApplyMoveByTargets(){	
-		preUpdate = thisTransform.position;
+		preUpdate = transform.position;
 		
 		//reset rotation to prevent look interferences as object rotates and attempts to move with translate and record current rotation
 		Vector3 currentRotation = new Vector3();
 		
 		if(tweenArguments.Contains("looktarget")){
-			currentRotation = thisTransform.eulerAngles;
-			thisTransform.eulerAngles = vector3s[4];	
+			currentRotation = transform.eulerAngles;
+			transform.eulerAngles = vector3s[4];	
 		}
 		
 		//calculate:
@@ -4068,14 +4242,14 @@ public class iTween : MonoBehaviour
 		vector3s[2].z = ease(vector3s[0].z,vector3s[1].z,percentage);
 				
 		//apply:
-		thisTransform.Translate(vector3s[2]-vector3s[3],space);
+		transform.Translate(vector3s[2]-vector3s[3],space);
 		
 		//record:
 		vector3s[3]=vector3s[2];
 		
 		//reset rotation:
 		if(tweenArguments.Contains("looktarget")){
-			thisTransform.eulerAngles = currentRotation;	
+			transform.eulerAngles = currentRotation;	
 		}
 				
 		/*
@@ -4086,9 +4260,9 @@ public class iTween : MonoBehaviour
 		*/
 		
 		//need physics?
-		postUpdate=thisTransform.position;
+		postUpdate=transform.position;
 		if(physics){
-			thisTransform.position=preUpdate;
+			transform.position=preUpdate;
 			GetComponent<Rigidbody>().MovePosition(postUpdate);
 		}
 	}	
@@ -4100,11 +4274,11 @@ public class iTween : MonoBehaviour
 		vector3s[2].z = ease(vector3s[0].z,vector3s[1].z,percentage);
 		
 		//apply:
-		thisTransform.localScale=vector3s[2];	
+		transform.localScale=vector3s[2];	
 		
 		//dial in:
 		if(percentage==1){
-			thisTransform.localScale=vector3s[1];
+			transform.localScale=vector3s[1];
 		}
 	}
 	
@@ -4116,14 +4290,14 @@ public class iTween : MonoBehaviour
 		
 		//apply:
 		if (isLocal) {
-			thisTransform.localRotation = Quaternion.Euler(vector3s[2]);
+			transform.localRotation = Quaternion.Euler(vector3s[2]);
 		}else{
-			thisTransform.rotation = Quaternion.Euler(vector3s[2]);
+			transform.rotation = Quaternion.Euler(vector3s[2]);
 		};	
 	}	
 	
 	void ApplyRotateToTargets(){
-		preUpdate=thisTransform.eulerAngles;
+		preUpdate=transform.eulerAngles;
 		
 		//calculate:
 		vector3s[2].x = ease(vector3s[0].x,vector3s[1].x,percentage);
@@ -4132,30 +4306,30 @@ public class iTween : MonoBehaviour
 		
 		//apply:
 		if (isLocal) {
-			thisTransform.localRotation = Quaternion.Euler(vector3s[2]);
+			transform.localRotation = Quaternion.Euler(vector3s[2]);
 		}else{
-			thisTransform.rotation = Quaternion.Euler(vector3s[2]);
+			transform.rotation = Quaternion.Euler(vector3s[2]);
 		};	
 		
 		//dial in:
 		if(percentage==1){
 			if (isLocal) {
-				thisTransform.localRotation = Quaternion.Euler(vector3s[1]);
+				transform.localRotation = Quaternion.Euler(vector3s[1]);
 			}else{
-				thisTransform.rotation = Quaternion.Euler(vector3s[1]);
+				transform.rotation = Quaternion.Euler(vector3s[1]);
 			};
 		}
 		
 		//need physics?
-		postUpdate=thisTransform.eulerAngles;
+		postUpdate=transform.eulerAngles;
 		if(physics){
-			thisTransform.eulerAngles=preUpdate;
+			transform.eulerAngles=preUpdate;
 			GetComponent<Rigidbody>().MoveRotation(Quaternion.Euler(postUpdate));
 		}
 	}
 	
 	void ApplyRotateAddTargets(){
-		preUpdate = thisTransform.eulerAngles;
+		preUpdate = transform.eulerAngles;
 		
 		//calculate:
 		vector3s[2].x = ease(vector3s[0].x,vector3s[1].x,percentage);
@@ -4163,15 +4337,15 @@ public class iTween : MonoBehaviour
 		vector3s[2].z = ease(vector3s[0].z,vector3s[1].z,percentage);
 		
 		//apply:
-		thisTransform.Rotate(vector3s[2]-vector3s[3],space);
+		transform.Rotate(vector3s[2]-vector3s[3],space);
 
 		//record:
 		vector3s[3]=vector3s[2];	
 		
 		//need physics?
-		postUpdate=thisTransform.eulerAngles;
+		postUpdate=transform.eulerAngles;
 		if(physics){
-			thisTransform.eulerAngles=preUpdate;
+			transform.eulerAngles=preUpdate;
 			GetComponent<Rigidbody>().MoveRotation(Quaternion.Euler(postUpdate));
 		}		
 	}	
@@ -4179,30 +4353,30 @@ public class iTween : MonoBehaviour
 	void ApplyShakePositionTargets(){
 		//preUpdate = transform.position;
 		if (isLocal) {
-			preUpdate = thisTransform.localPosition;
+			preUpdate = transform.localPosition;
 		}else{
-			preUpdate = thisTransform.position;
+			preUpdate = transform.position;
 		}
 		
 		//reset rotation to prevent look interferences as object rotates and attempts to move with translate and record current rotation
 		Vector3 currentRotation = new Vector3();
 		
 		if(tweenArguments.Contains("looktarget")){
-			currentRotation = thisTransform.eulerAngles;
-			thisTransform.eulerAngles = vector3s[3];	
+			currentRotation = transform.eulerAngles;
+			transform.eulerAngles = vector3s[3];	
 		}
 		
 		//impact:
 		if (percentage==0) {
-			thisTransform.Translate(vector3s[1],space);
+			transform.Translate(vector3s[1],space);
 		}
 		
 		//transform.position=vector3s[0];
 		//reset:
 		if (isLocal) {
-			thisTransform.localPosition=vector3s[0];
+			transform.localPosition=vector3s[0];
 		}else{
-			thisTransform.position=vector3s[0];
+			transform.position=vector3s[0];
 		}
 		
 		//generate:
@@ -4214,20 +4388,20 @@ public class iTween : MonoBehaviour
 		//apply:	
 		//transform.Translate(vector3s[2],space);	
 		if (isLocal) {
-			thisTransform.localPosition+=vector3s[2];
+			transform.localPosition+=vector3s[2];
 		}else{
-			thisTransform.position+=vector3s[2];
+			transform.position+=vector3s[2];
 		}
 		
 		//reset rotation:
 		if(tweenArguments.Contains("looktarget")){
-			thisTransform.eulerAngles = currentRotation;	
+			transform.eulerAngles = currentRotation;	
 		}	
 		
 		//need physics?
-		postUpdate=thisTransform.position;
+		postUpdate=transform.position;
 		if(physics){
-			thisTransform.position=preUpdate;
+			transform.position=preUpdate;
 			GetComponent<Rigidbody>().MovePosition(postUpdate);
 		}
 	}	
@@ -4235,11 +4409,11 @@ public class iTween : MonoBehaviour
 	void ApplyShakeScaleTargets(){
 		//impact:
 		if (percentage==0) {
-			thisTransform.localScale=vector3s[1];
+			transform.localScale=vector3s[1];
 		}
 		
 		//reset:
-		thisTransform.localScale=vector3s[0];
+		transform.localScale=vector3s[0];
 		
 		//generate:
 		float diminishingControl = 1-percentage;
@@ -4248,19 +4422,19 @@ public class iTween : MonoBehaviour
 		vector3s[2].z= UnityEngine.Random.Range(-vector3s[1].z*diminishingControl, vector3s[1].z*diminishingControl);
 
 		//apply:
-		thisTransform.localScale+=vector3s[2];
+		transform.localScale+=vector3s[2];
 	}		
 	
 	void ApplyShakeRotationTargets(){
-		preUpdate = thisTransform.eulerAngles;
+		preUpdate = transform.eulerAngles;
 		
 		//impact:
 		if (percentage==0) {
-			thisTransform.Rotate(vector3s[1],space);
+			transform.Rotate(vector3s[1],space);
 		}
 		
 		//reset:
-		thisTransform.eulerAngles=vector3s[0];
+		transform.eulerAngles=vector3s[0];
 		
 		//generate:
 		float diminishingControl = 1-percentage;
@@ -4269,25 +4443,25 @@ public class iTween : MonoBehaviour
 		vector3s[2].z= UnityEngine.Random.Range(-vector3s[1].z*diminishingControl, vector3s[1].z*diminishingControl);
 
 		//apply:
-		thisTransform.Rotate(vector3s[2],space);
+		transform.Rotate(vector3s[2],space);
 		
 		//need physics?
-		postUpdate=thisTransform.eulerAngles;
+		postUpdate=transform.eulerAngles;
 		if(physics){
-			thisTransform.eulerAngles=preUpdate;
+			transform.eulerAngles=preUpdate;
 			GetComponent<Rigidbody>().MoveRotation(Quaternion.Euler(postUpdate));
 		}
 	}		
 	
 	void ApplyPunchPositionTargets(){
-		preUpdate = thisTransform.position;
+		preUpdate = transform.position;
 		
 		//reset rotation to prevent look interferences as object rotates and attempts to move with translate and record current rotation
 		Vector3 currentRotation = new Vector3();
 		
 		if(tweenArguments.Contains("looktarget")){
-			currentRotation = thisTransform.eulerAngles;
-			thisTransform.eulerAngles = vector3s[4];	
+			currentRotation = transform.eulerAngles;
+			transform.eulerAngles = vector3s[4];	
 		}
 		
 		//calculate:
@@ -4308,14 +4482,14 @@ public class iTween : MonoBehaviour
 		}
 		
 		//apply:
-		thisTransform.Translate(vector3s[2]-vector3s[3],space);
+		transform.Translate(vector3s[2]-vector3s[3],space);
 
 		//record:
 		vector3s[3]=vector3s[2];
 		
 		//reset rotation:
 		if(tweenArguments.Contains("looktarget")){
-			thisTransform.eulerAngles = currentRotation;	
+			transform.eulerAngles = currentRotation;	
 		}
 		
 		//dial in:
@@ -4326,15 +4500,15 @@ public class iTween : MonoBehaviour
 		*/
 		
 		//need physics?
-		postUpdate=thisTransform.position;
+		postUpdate=transform.position;
 		if(physics){
-			thisTransform.position=preUpdate;
+			transform.position=preUpdate;
 			GetComponent<Rigidbody>().MovePosition(postUpdate);
 		}
 	}		
 	
 	void ApplyPunchRotationTargets(){
-		preUpdate = thisTransform.eulerAngles;
+		preUpdate = transform.eulerAngles;
 		
 		//calculate:
 		if(vector3s[1].x>0){
@@ -4354,7 +4528,7 @@ public class iTween : MonoBehaviour
 		}
 		
 		//apply:
-		thisTransform.Rotate(vector3s[2]-vector3s[3],space);
+		transform.Rotate(vector3s[2]-vector3s[3],space);
 
 		//record:
 		vector3s[3]=vector3s[2];
@@ -4367,9 +4541,9 @@ public class iTween : MonoBehaviour
 		*/
 		
 		//need physics?
-		postUpdate=thisTransform.eulerAngles;
+		postUpdate=transform.eulerAngles;
 		if(physics){
-			thisTransform.eulerAngles=preUpdate;
+			transform.eulerAngles=preUpdate;
 			GetComponent<Rigidbody>().MoveRotation(Quaternion.Euler(postUpdate));
 		}
 	}	
@@ -4393,7 +4567,7 @@ public class iTween : MonoBehaviour
 		}
 		
 		//apply:
-		thisTransform.localScale=vector3s[0]+vector3s[2];
+		transform.localScale=vector3s[0]+vector3s[2];
 		
 		//dial in:
 		/*
@@ -4669,7 +4843,11 @@ public class iTween : MonoBehaviour
 		}
 		
 		//init values:
-		if(target.GetComponent<Renderer>()){
+		if(target.GetComponent(typeof(GUITexture))){
+			colors[0] = colors[1] = target.GetComponent<GUITexture>().color;
+		}else if(target.GetComponent(typeof(GUIText))){
+			colors[0] = colors[1] = target.GetComponent<GUIText>().material.color;
+		}else if(target.GetComponent<Renderer>()){
 			colors[0] = colors[1] = target.GetComponent<Renderer>().material.color;
 		}else if(target.GetComponent<Light>()){
 			colors[0] = colors[1] = target.GetComponent<Light>().color;	
@@ -4700,7 +4878,11 @@ public class iTween : MonoBehaviour
 		colors[3].a=Mathf.SmoothDamp(colors[0].a,colors[1].a,ref colors[2].a,time);
 				
 		//apply:
-		if(target.GetComponent<Renderer>()){
+		if(target.GetComponent(typeof(GUITexture))){
+			target.GetComponent<GUITexture>().color=colors[3];
+		}else if(target.GetComponent(typeof(GUIText))){
+			target.GetComponent<GUIText>().material.color=colors[3];
+		}else if(target.GetComponent<Renderer>()){
 			target.GetComponent<Renderer>().material.color=colors[3];
 		}else if(target.GetComponent<Light>()){
 			target.GetComponent<Light>().color=colors[3];	
@@ -4757,7 +4939,7 @@ public class iTween : MonoBehaviour
 		if(args.Contains("audiosource")){
 			audioSource=(AudioSource)args["audiosource"];
 		}else{
-			if(target.GetComponent<AudioSource>()){
+			if(target.GetComponent(typeof(AudioSource))){
 				audioSource=target.GetComponent<AudioSource>();
 			}else{
 				//throw error if no AudioSource is available:
@@ -5271,7 +5453,26 @@ public class iTween : MonoBehaviour
 		
 		return pathLength;
 	}	
-
+	
+	/// <summary>
+	/// Creates and returns a full-screen Texture2D for use with CameraFade.
+	/// </summary>
+	/// <returns>
+	/// Texture2D
+	/// </returns>
+	/// <param name='color'>
+	/// Color
+	/// </param>
+	public static Texture2D CameraTexture(Color color){
+		Texture2D texture = new Texture2D(Screen.width,Screen.height,TextureFormat.ARGB32, false);
+		Color[] colors = new Color[Screen.width*Screen.height];
+		for (int i = 0; i < colors.Length; i++) {
+			colors[i]=color;
+		}
+		texture.SetPixels(colors);
+		texture.Apply();
+		return(texture);		
+	}
 	
 	/// <summary>
 	/// Puts a GameObject on a path at the provided percentage 
@@ -5777,6 +5978,109 @@ public class iTween : MonoBehaviour
 		}
 	}
 	
+	/// <summary>
+	/// Changes a camera fade's texture.
+	/// </summary>
+	/// <param name="depth">
+	/// A <see cref="System.Int32"/>
+	/// </param>
+	public static void CameraFadeDepth(int depth){
+		if(cameraFade){
+			cameraFade.transform.position=new Vector3(cameraFade.transform.position.x,cameraFade.transform.position.y,depth);
+		}
+	}
+	
+	/// <summary>
+	/// Removes and destroyes a camera fade.
+	/// </summary>
+	public static void CameraFadeDestroy(){
+		if(cameraFade){
+			Destroy(cameraFade);
+		}
+	}
+	
+	/// <summary>
+	/// Changes a camera fade's texture.
+	/// </summary>
+	/// <param name='texture'>
+	/// A <see cref="Texture2D"/>
+	/// </param>
+	public static void CameraFadeSwap(Texture2D texture){
+		if(cameraFade){
+			cameraFade.GetComponent<GUITexture>().texture=texture;
+		}
+	}
+	
+	/// <summary>
+	/// Creates a GameObject (if it doesn't exist) at the supplied depth that can be used to simulate a camera fade.
+	/// </summary>
+	/// <param name='texture'>
+	/// A <see cref="Texture2D"/>
+	/// </param>
+	/// <param name='depth'>
+	/// A <see cref="System.Int32"/>
+	/// </param>
+	/// <returns>
+	/// A <see cref="GameObject"/> for a reference to the CameraFade.
+	/// </returns>
+	public static GameObject CameraFadeAdd(Texture2D texture, int depth){
+		if(cameraFade){
+			return null;
+		}else{			
+			//establish colorFade object:
+			cameraFade = new GameObject("iTween Camera Fade");
+			cameraFade.transform.position= new Vector3(.5f,.5f,depth);
+			cameraFade.AddComponent<GUITexture>();
+			cameraFade.GetComponent<GUITexture>().texture=texture;
+			cameraFade.GetComponent<GUITexture>().color = new Color(.5f,.5f,.5f,0);
+			return cameraFade;
+		}
+	}
+	
+	/// <summary>
+	/// Creates a GameObject (if it doesn't exist) at the default depth that can be used to simulate a camera fade.
+	/// </summary>
+	/// <param name='texture'>
+	/// A <see cref="Texture2D"/>
+	/// </param>
+	/// <returns>
+	/// A <see cref="GameObject"/> for a reference to the CameraFade.
+	/// </returns>
+	public static GameObject CameraFadeAdd(Texture2D texture){
+		if(cameraFade){
+			return null;
+		}else{			
+			//establish colorFade object:
+			cameraFade = new GameObject("iTween Camera Fade");
+			cameraFade.transform.position= new Vector3(.5f,.5f,Defaults.cameraFadeDepth);
+			cameraFade.AddComponent<GUITexture>();
+			cameraFade.GetComponent<GUITexture>().texture=texture;
+			cameraFade.GetComponent<GUITexture>().color = new Color(.5f,.5f,.5f,0);
+			return cameraFade;
+		}
+	}
+	
+	/// <summary>
+	/// Creates a GameObject (if it doesn't exist) at the default depth filled with black that can be used to simulate a camera fade.
+	/// </summary>
+	/// <returns>
+	/// A <see cref="GameObject"/> for a reference to the CameraFade.
+	/// </returns>
+	public static GameObject CameraFadeAdd(){
+		if(cameraFade){
+			return null;
+		}else{			
+			//establish colorFade object:
+			cameraFade = new GameObject("iTween Camera Fade");
+			cameraFade.transform.position= new Vector3(.5f,.5f,Defaults.cameraFadeDepth);
+			cameraFade.AddComponent<GUITexture>();
+			cameraFade.GetComponent<GUITexture>().texture=CameraTexture(Color.black);
+			cameraFade.GetComponent<GUITexture>().color = new Color(.5f,.5f,.5f,0);
+			return cameraFade;
+		}
+	}	
+	
+	
 	//#################################
 	//# RESUME UTILITIES AND OVERLOADS # 
 	//#################################	
@@ -5785,7 +6089,7 @@ public class iTween : MonoBehaviour
 	/// Resume all iTweens on a GameObject.
 	/// </summary>
 	public static void Resume(GameObject target){
-		Component[] tweens = target.GetComponents<iTween>();
+		Component[] tweens = target.GetComponents(typeof(iTween));
 		foreach (iTween item in tweens){
 			item.enabled=true;
 		}
@@ -5810,7 +6114,7 @@ public class iTween : MonoBehaviour
 	/// A <see cref="System.String"/> name of the type of iTween you would like to resume.  Can be written as part of a name such as "mov" for all "MoveTo" iTweens.
 	/// </param>	
 	public static void Resume(GameObject target, string type){
-		Component[] tweens = target.GetComponents<iTween>();
+		Component[] tweens = target.GetComponents(typeof(iTween));
 		foreach (iTween item in tweens){
 			string targetType = item.type+item.method;
 			targetType=targetType.Substring(0,type.Length);
@@ -5827,7 +6131,7 @@ public class iTween : MonoBehaviour
 	/// A <see cref="System.String"/> name of the type of iTween you would like to resume.  Can be written as part of a name such as "mov" for all "MoveTo" iTweens.
 	/// </param>	
 	public static void Resume(GameObject target, string type, bool includechildren){
-		Component[] tweens = target.GetComponents<iTween>();
+		Component[] tweens = target.GetComponents(typeof(iTween));
 		foreach (iTween item in tweens){
 			string targetType = item.type+item.method;
 			targetType=targetType.Substring(0,type.Length);
@@ -5847,7 +6151,7 @@ public class iTween : MonoBehaviour
 	/// </summary>
 	public static void Resume(){
 		for (int i = 0; i < tweens.Count; i++) {
-			Hashtable currentTween = tweens[i];
+			Hashtable currentTween = (Hashtable)tweens[i];
 			GameObject target = (GameObject)currentTween["target"];
 			Resume(target);
 		}
@@ -5863,7 +6167,7 @@ public class iTween : MonoBehaviour
 		ArrayList resumeArray = new ArrayList();
 		
 		for (int i = 0; i < tweens.Count; i++) {
-			Hashtable currentTween = tweens[i];
+			Hashtable currentTween = (Hashtable)tweens[i];
 			GameObject target = (GameObject)currentTween["target"];
 			resumeArray.Insert(resumeArray.Count,target);
 		}
@@ -5881,7 +6185,7 @@ public class iTween : MonoBehaviour
 	/// Pause all iTweens on a GameObject.
 	/// </summary>
 	public static void Pause(GameObject target){
-		Component[] tweens = target.GetComponents<iTween>();
+		Component[] tweens = target.GetComponents(typeof(iTween));
 		foreach (iTween item in tweens){
 			if(item.delay>0){
 				item.delay-=Time.time-item.delayStarted;
@@ -5911,7 +6215,7 @@ public class iTween : MonoBehaviour
 	/// A <see cref="System.String"/> name of the type of iTween you would like to pause.  Can be written as part of a name such as "mov" for all "MoveTo" iTweens.
 	/// </param>	
 	public static void Pause(GameObject target, string type){
-		Component[] tweens = target.GetComponents<iTween>();
+		Component[] tweens = target.GetComponents(typeof(iTween));
 		foreach (iTween item in tweens){
 			string targetType = item.type+item.method;
 			targetType=targetType.Substring(0,type.Length);
@@ -5933,7 +6237,7 @@ public class iTween : MonoBehaviour
 	/// A <see cref="System.String"/> name of the type of iTween you would like to pause.  Can be written as part of a name such as "mov" for all "MoveTo" iTweens.
 	/// </param>	
 	public static void Pause(GameObject target, string type, bool includechildren){
-		Component[] tweens = target.GetComponents<iTween>();
+		Component[] tweens = target.GetComponents(typeof(iTween));
 		foreach (iTween item in tweens){
 			string targetType = item.type+item.method;
 			targetType=targetType.Substring(0,type.Length);
@@ -5958,7 +6262,7 @@ public class iTween : MonoBehaviour
 	/// </summary>
 	public static void Pause(){
 		for (int i = 0; i < tweens.Count; i++) {
-			Hashtable currentTween = tweens[i];
+			Hashtable currentTween = (Hashtable)tweens[i];
 			GameObject target = (GameObject)currentTween["target"];
 			Pause(target);
 		}
@@ -5974,7 +6278,7 @@ public class iTween : MonoBehaviour
 		ArrayList pauseArray = new ArrayList();
 		
 		for (int i = 0; i < tweens.Count; i++) {
-			Hashtable currentTween = tweens[i];
+			Hashtable currentTween = (Hashtable)tweens[i];
 			GameObject target = (GameObject)currentTween["target"];
 			pauseArray.Insert(pauseArray.Count,target);
 		}
@@ -6005,7 +6309,7 @@ public class iTween : MonoBehaviour
 		int tweenCount = 0;
 
 		for (int i = 0; i < tweens.Count; i++) {
-			Hashtable currentTween = tweens[i];
+			Hashtable currentTween = (Hashtable)tweens[i];
 			string targetType = (string)currentTween["type"]+(string)currentTween["method"];
 			targetType=targetType.Substring(0,type.Length);
 			if(targetType.ToLower() == type.ToLower()){
@@ -6020,7 +6324,7 @@ public class iTween : MonoBehaviour
 	/// Count all iTweens on a GameObject.
 	/// </summary>
 	public static int Count(GameObject target){
-		Component[] tweens = target.GetComponents<iTween>();
+		Component[] tweens = target.GetComponents(typeof(iTween));
 		return(tweens.Length);
 	}
 	
@@ -6032,8 +6336,7 @@ public class iTween : MonoBehaviour
 	/// </param>  
 	public static int Count(GameObject target, string type){
 		int tweenCount = 0;
-		Component[] tweens = target.GetComponents<iTween>();
-		foreach (iTween item in tweens){
+		Component[] tweens = target.GetComponents(typeof(iTween));foreach (iTween item in tweens){
 			string targetType = item.type+item.method;
 			targetType=targetType.Substring(0,type.Length);
 			if(targetType.ToLower() == type.ToLower()){
@@ -6052,7 +6355,7 @@ public class iTween : MonoBehaviour
 	/// </summary>
 	public static void Stop(){
 		for (int i = 0; i < tweens.Count; i++) {
-			Hashtable currentTween = tweens[i];
+			Hashtable currentTween = (Hashtable)tweens[i];
 			GameObject target = (GameObject)currentTween["target"];
 			Stop(target);
 		}
@@ -6069,7 +6372,7 @@ public class iTween : MonoBehaviour
 		ArrayList stopArray = new ArrayList();
 		
 		for (int i = 0; i < tweens.Count; i++) {
-			Hashtable currentTween = tweens[i];
+			Hashtable currentTween = (Hashtable)tweens[i];
 			GameObject target = (GameObject)currentTween["target"];
 			stopArray.Insert(stopArray.Count,target);
 		}
@@ -6090,7 +6393,7 @@ public class iTween : MonoBehaviour
 		ArrayList stopArray = new ArrayList();
 		
 		for (int i = 0; i < tweens.Count; i++) {
-			Hashtable currentTween = tweens[i];
+			Hashtable currentTween = (Hashtable)tweens[i];
 			GameObject target = (GameObject)currentTween["target"];
 			stopArray.Insert(stopArray.Count,target);
 		}
@@ -6105,7 +6408,7 @@ public class iTween : MonoBehaviour
 	/// Stop and destroy all iTweens on a GameObject.
 	/// </summary>
 	public static void Stop(GameObject target){
-		Component[] tweens = target.GetComponents<iTween>();
+		Component[] tweens = target.GetComponents(typeof(iTween));
 		foreach (iTween item in tweens){
 			item.Dispose();
 		}
@@ -6130,7 +6433,7 @@ public class iTween : MonoBehaviour
 	/// A <see cref="System.String"/> name of the type of iTween you would like to stop.  Can be written as part of a name such as "mov" for all "MoveTo" iTweens.
 	/// </param>	
 	public static void Stop(GameObject target, string type){
-		Component[] tweens = target.GetComponents<iTween>();
+		Component[] tweens = target.GetComponents(typeof(iTween));
 		foreach (iTween item in tweens){
 			string targetType = item.type+item.method;
 			targetType=targetType.Substring(0,type.Length);
@@ -6148,7 +6451,7 @@ public class iTween : MonoBehaviour
 	/// The <see cref="System.String"/> name of iTween you would like to stop.
 	/// </param>	
 	public static void StopByName(GameObject target, string name){
-		Component[] tweens = target.GetComponents<iTween>();
+		Component[] tweens = target.GetComponents(typeof(iTween));
 		foreach (iTween item in tweens){
 			/*string targetType = item.type+item.method;
 			targetType=targetType.Substring(0,type.Length);
@@ -6169,7 +6472,7 @@ public class iTween : MonoBehaviour
 	/// A <see cref="System.String"/> name of the type of iTween you would like to stop.  Can be written as part of a name such as "mov" for all "MoveTo" iTweens.
 	/// </param>	
 	public static void Stop(GameObject target, string type, bool includechildren){
-		Component[] tweens = target.GetComponents<iTween>();
+		Component[] tweens = target.GetComponents(typeof(iTween));
 		foreach (iTween item in tweens){
 			string targetType = item.type+item.method;
 			targetType=targetType.Substring(0,type.Length);
@@ -6192,7 +6495,7 @@ public class iTween : MonoBehaviour
 	/// The <see cref="System.String"/> name of iTween you would like to stop.
 	/// </param>	
 	public static void StopByName(GameObject target, string name, bool includechildren){
-		Component[] tweens = target.GetComponents<iTween>();
+		Component[] tweens = target.GetComponents(typeof(iTween));
 		foreach (iTween item in tweens){
 			/*string targetType = item.type+item.method;
 			targetType=targetType.Substring(0,type.Length);
@@ -6240,13 +6543,7 @@ public class iTween : MonoBehaviour
 
 	#region Component Segments
 	
-	private iTween(Hashtable h) {
-		tweenArguments = h;	
-	}
-	
 	void Awake(){
-		thisTransform = transform;
-			
 		RetrieveArgs();
         lastRealTime = Time.realtimeSinceStartup; // Added by PressPlay
 	}
@@ -6438,10 +6735,8 @@ public class iTween : MonoBehaviour
 		}
 		if(!args.Contains("target")){
 			args["target"] = target;
-		
 		}		
-
-		tweens.Insert (0, args);
+		tweens.Insert(0,args);
 		target.AddComponent<iTween>();
 	}		
 	
@@ -6480,14 +6775,14 @@ public class iTween : MonoBehaviour
 	
 	//random ID generator:
 	static string GenerateID(){
-//		int strlen = 15;
-//		char[] chars = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8'};
-//		int num_chars = chars.Length - 1;
-//		string randomChar = "";
-//		for (int i = 0; i < strlen; i++) {
-//			randomChar += chars[(int)Mathf.Floor(UnityEngine.Random.Range(0,num_chars))];
-//		}
-		return System.Guid.NewGuid().ToString();
+		int strlen = 15;
+		char[] chars = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8'};
+		int num_chars = chars.Length - 1;
+		string randomChar = "";
+		for (int i = 0; i < strlen; i++) {
+			randomChar += chars[(int)Mathf.Floor(UnityEngine.Random.Range(0,num_chars))];
+		}
+		return randomChar;
 	}	
 	
 	//grab and set generic, neccesary iTween arguments:
@@ -6722,23 +7017,23 @@ public class iTween : MonoBehaviour
 	//calculate percentage of tween based on time:
 	void UpdatePercentage(){
 
-	        // Added by PressPlay   
-	        if (useRealTime)
-	        {
-	            runningTime += (Time.realtimeSinceStartup - lastRealTime);      
-	        }
-	        else
-	        {
-	            runningTime += Time.deltaTime;
-	        }
-	
-			if(reverse){
-				percentage = 1 - runningTime/time;	
-			}else{
-				percentage = runningTime/time;	
-			}
-	
-	        lastRealTime = Time.realtimeSinceStartup; // Added by PressPlay
+        // Added by PressPlay   
+        if (useRealTime)
+        {
+            runningTime += (Time.realtimeSinceStartup - lastRealTime);      
+        }
+        else
+        {
+            runningTime += Time.deltaTime;
+        }
+
+		if(reverse){
+			percentage = 1 - runningTime/time;	
+		}else{
+			percentage = runningTime/time;	
+		}
+
+        lastRealTime = Time.realtimeSinceStartup; // Added by PressPlay
 	}
 	
 	void CallBack(string callbackType){
@@ -6763,7 +7058,7 @@ public class iTween : MonoBehaviour
 	
 	void Dispose(){
 		for (int i = 0; i < tweens.Count; i++) {
-			Hashtable tweenEntry = tweens[i];
+			Hashtable tweenEntry = (Hashtable)tweens[i];
 			if ((string)tweenEntry["id"] == id){
 				tweens.RemoveAt(i);
 				break;
@@ -6773,7 +7068,7 @@ public class iTween : MonoBehaviour
 	}	
 	
 	void ConflictCheck(){//if a new iTween is about to run and is of the same type as an in progress iTween this will destroy the previous if the new one is NOT identical in every way or it will destroy the new iTween if they are:	
-		Component[] tweens = GetComponents<iTween>();
+		Component[] tweens = GetComponents(typeof(iTween));
 		foreach (iTween item in tweens) {
 			if(item.type == "value"){
 				return;
@@ -6844,7 +7139,7 @@ public class iTween : MonoBehaviour
 	private float clerp(float start, float end, float value){
 		float min = 0.0f;
 		float max = 360.0f;
-		float half = Mathf.Abs((max - min) * 0.5f);
+		float half = Mathf.Abs((max - min) / 2.0f);
 		float retval = 0.0f;
 		float diff = 0.0f;
 		if ((end - start) < -half){
@@ -6876,9 +7171,9 @@ public class iTween : MonoBehaviour
 	private float easeInOutQuad(float start, float end, float value){
 		value /= .5f;
 		end -= start;
-		if (value < 1) return end * 0.5f * value * value + start;
+		if (value < 1) return end / 2 * value * value + start;
 		value--;
-		return -end * 0.5f * (value * (value - 2) - 1) + start;
+		return -end / 2 * (value * (value - 2) - 1) + start;
 	}
 
 	private float easeInCubic(float start, float end, float value){
@@ -6895,9 +7190,9 @@ public class iTween : MonoBehaviour
 	private float easeInOutCubic(float start, float end, float value){
 		value /= .5f;
 		end -= start;
-		if (value < 1) return end * 0.5f * value * value * value + start;
+		if (value < 1) return end / 2 * value * value * value + start;
 		value -= 2;
-		return end * 0.5f * (value * value * value + 2) + start;
+		return end / 2 * (value * value * value + 2) + start;
 	}
 
 	private float easeInQuart(float start, float end, float value){
@@ -6914,9 +7209,9 @@ public class iTween : MonoBehaviour
 	private float easeInOutQuart(float start, float end, float value){
 		value /= .5f;
 		end -= start;
-		if (value < 1) return end * 0.5f * value * value * value * value + start;
+		if (value < 1) return end / 2 * value * value * value * value + start;
 		value -= 2;
-		return -end * 0.5f * (value * value * value * value - 2) + start;
+		return -end / 2 * (value * value * value * value - 2) + start;
 	}
 
 	private float easeInQuint(float start, float end, float value){
@@ -6933,42 +7228,42 @@ public class iTween : MonoBehaviour
 	private float easeInOutQuint(float start, float end, float value){
 		value /= .5f;
 		end -= start;
-		if (value < 1) return end * 0.5f * value * value * value * value * value + start;
+		if (value < 1) return end / 2 * value * value * value * value * value + start;
 		value -= 2;
-		return end * 0.5f * (value * value * value * value * value + 2) + start;
+		return end / 2 * (value * value * value * value * value + 2) + start;
 	}
 
 	private float easeInSine(float start, float end, float value){
 		end -= start;
-		return -end * Mathf.Cos(value * (Mathf.PI * 0.5f)) + end + start;
+		return -end * Mathf.Cos(value / 1 * (Mathf.PI / 2)) + end + start;
 	}
 
 	private float easeOutSine(float start, float end, float value){
 		end -= start;
-		return end * Mathf.Sin(value * (Mathf.PI * 0.5f)) + start;
+		return end * Mathf.Sin(value / 1 * (Mathf.PI / 2)) + start;
 	}
 
 	private float easeInOutSine(float start, float end, float value){
 		end -= start;
-		return -end * 0.5f * (Mathf.Cos(Mathf.PI * value) - 1) + start;
+		return -end / 2 * (Mathf.Cos(Mathf.PI * value / 1) - 1) + start;
 	}
 
 	private float easeInExpo(float start, float end, float value){
 		end -= start;
-		return end * Mathf.Pow(2, 10 * (value - 1)) + start;
+		return end * Mathf.Pow(2, 10 * (value / 1 - 1)) + start;
 	}
 
 	private float easeOutExpo(float start, float end, float value){
 		end -= start;
-		return end * (-Mathf.Pow(2, -10 * value ) + 1) + start;
+		return end * (-Mathf.Pow(2, -10 * value / 1) + 1) + start;
 	}
 
 	private float easeInOutExpo(float start, float end, float value){
 		value /= .5f;
 		end -= start;
-		if (value < 1) return end * 0.5f * Mathf.Pow(2, 10 * (value - 1)) + start;
+		if (value < 1) return end / 2 * Mathf.Pow(2, 10 * (value - 1)) + start;
 		value--;
-		return end * 0.5f * (-Mathf.Pow(2, -10 * value) + 2) + start;
+		return end / 2 * (-Mathf.Pow(2, -10 * value) + 2) + start;
 	}
 
 	private float easeInCirc(float start, float end, float value){
@@ -6985,9 +7280,9 @@ public class iTween : MonoBehaviour
 	private float easeInOutCirc(float start, float end, float value){
 		value /= .5f;
 		end -= start;
-		if (value < 1) return -end * 0.5f * (Mathf.Sqrt(1 - value * value) - 1) + start;
+		if (value < 1) return -end / 2 * (Mathf.Sqrt(1 - value * value) - 1) + start;
 		value -= 2;
-		return end * 0.5f * (Mathf.Sqrt(1 - value * value) + 1) + start;
+		return end / 2 * (Mathf.Sqrt(1 - value * value) + 1) + start;
 	}
 
 	/* GFX47 MOD START */
@@ -7022,7 +7317,7 @@ public class iTween : MonoBehaviour
 	private float easeInOutBounce(float start, float end, float value){
 		end -= start;
 		float d = 1f;
-		if (value < d* 0.5f) return easeInBounce(0, end, value*2) * 0.5f + start;
+		if (value < d/2) return easeInBounce(0, end, value*2) * 0.5f + start;
 		else return easeOutBounce(0, end, value*2-d) * 0.5f + end*0.5f + start;
 	}
 	/* GFX47 MOD END */
@@ -7037,7 +7332,7 @@ public class iTween : MonoBehaviour
 	private float easeOutBack(float start, float end, float value){
 		float s = 1.70158f;
 		end -= start;
-		value = (value) - 1;
+		value = (value / 1) - 1;
 		return end * ((value) * value * ((s + 1) * value + s) + 1) + start;
 	}
 
@@ -7047,11 +7342,11 @@ public class iTween : MonoBehaviour
 		value /= .5f;
 		if ((value) < 1){
 			s *= (1.525f);
-			return end * 0.5f * (value * value * (((s) + 1) * value - s)) + start;
+			return end / 2 * (value * value * (((s) + 1) * value - s)) + start;
 		}
 		value -= 2;
 		s *= (1.525f);
-		return end * 0.5f * ((value) * value * (((s) + 1) * value + s) + 2) + start;
+		return end / 2 * ((value) * value * (((s) + 1) * value + s) + 2) + start;
 	}
 
 	private float punch(float amplitude, float value){
@@ -7059,7 +7354,7 @@ public class iTween : MonoBehaviour
 		if (value == 0){
 			return 0;
 		}
-		else if (value == 1){
+		if (value == 1){
 			return 0;
 		}
 		float period = 1 * 0.3f;
@@ -7109,7 +7404,7 @@ public class iTween : MonoBehaviour
 		
 		if (a == 0f || a < Mathf.Abs(end)){
 			a = end;
-			s = p * 0.25f;
+			s = p / 4;
 			}else{
 			s = p / (2 * Mathf.PI) * Mathf.Asin(end / a);
 		}
@@ -7128,7 +7423,7 @@ public class iTween : MonoBehaviour
 		
 		if (value == 0) return start;
 		
-		if ((value /= d*0.5f) == 2) return start + end;
+		if ((value /= d/2) == 2) return start + end;
 		
 		if (a == 0f || a < Mathf.Abs(end)){
 			a = end;
