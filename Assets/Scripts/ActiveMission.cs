@@ -2,14 +2,32 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ActiveMission : ScriptableObject {
-    public MissionData missionData;
-    public float startTime;
+[System.Serializable]
+public class ActiveMission {
+    private Rocket rocket;
+    private MissionData missionData;
+    private float startTime;
+    private FlightPlan flightPlan;
 
-    internal static ActiveMission create(MissionData mission, float realtimeSinceStartup) {
-        var obj = ScriptableObject.CreateInstance<ActiveMission>();
-        obj.missionData = mission;
-        obj.startTime = realtimeSinceStartup;
-        return obj;
+    public ActiveMission(Rocket rocket, MissionData mission, float realtimeSinceStartup, FlightPlan flightPlan) {
+        this.rocket = rocket;
+        missionData = mission;
+        startTime = realtimeSinceStartup;
+        this.flightPlan = flightPlan;
+        rocket.transform.position = flightPlan.flightPath.nodes[0];
+    }
+
+    public void launch() {
+        iTween.MoveTo(rocket.gameObject, iTween.Hash(
+                    "path", flightPlan.flightPath.nodes.ToArray(), 
+                    "time", missionData.getDurationSeconds(),
+                    "easeType", iTween.EaseType.easeInOutCubic,
+                    "onComplete", "onMissionComplete"
+                )
+            );
+    }
+
+    public void onMissionComplete() {
+        rocket.missionComplete();
     }
 }

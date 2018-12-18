@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using System.Linq;
 
 public class MissionControl : MonoBehaviour {
     public Registry registry;
@@ -31,9 +32,14 @@ public class MissionControl : MonoBehaviour {
         missionPlanner.gameObject.SetActive(false);
         startPlanningButton.gameObject.SetActive(true);
         
-        gameState.missions.Add(ActiveMission.create(mission, Time.realtimeSinceStartup));
+        FlightPlan flightPlan = registry.flightPlans.Where(plan => plan.destination == mission.destinationData).First();
+        Rocket rocket = GameObject.Instantiate(mission.rocketData.rocketObject);
+        
+        var activeMission = new ActiveMission(rocket, mission, Time.realtimeSinceStartup, flightPlan);
+        gameState.missions.Add(activeMission);
         gameState.funds -= mission.getCost();
         gameState.registerProgress(mission.destinationData.progressionValue);
+        activeMission.launch();
     }
 
     public MissionData buildMission(RocketData rocket, PayloadData payload, DestinationData destination) {
