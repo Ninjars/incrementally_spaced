@@ -22,12 +22,8 @@ public class ActiveMission {
                     "path", flightPlan.flightPath.nodes.ToArray(), 
                     "time", missionData.getDurationSeconds(),
                     "easeType", iTween.EaseType.easeInOutCubic,
-                    "onComplete", "onMissionComplete"
+                    "oncomplete", "missionComplete"
                 )
             );
-    }
-
-    public void onMissionComplete() {
-        rocket.missionComplete();
     }
 }

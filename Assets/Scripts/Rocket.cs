@@ -5,6 +5,6 @@ using UnityEngine;
 
 public class Rocket : MonoBehaviour {
 	internal void missionComplete() {
-		GameObject.Destroy(this.gameObject);
+		Destroy(gameObject);
 	}
 }
