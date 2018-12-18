@@ -15,3 +15,4 @@ MonoBehaviour:
   requiredPower: 7
   baseMissionDuration: 25
   icon: {fileID: 21300000, guid: 89b99ed423e9d446a9712cd89cdfe19f, type: 3}
+  progressionValue: 40

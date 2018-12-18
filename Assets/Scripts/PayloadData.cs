@@ -16,6 +16,6 @@ public class PayloadData : ScriptableObject {
     [Tooltip("Add or increment these values in the game state")]
     public List<string> completionFlags;
     [Tooltip("Game state flag conditions required to use this payload")]
-    public List<StatePrecondition> preconditions;
+    public List<ProgressPrecondition> preconditions;
     public Sprite icon;
 }

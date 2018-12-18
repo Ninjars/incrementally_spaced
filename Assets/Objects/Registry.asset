@@ -25,3 +25,19 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4cd81a426414d478db9b8bbcf587a888, type: 2}
   - {fileID: 11400000, guid: 7874af2ee8ecf48fa9818c8b58ff8b71, type: 2}
   - {fileID: 11400000, guid: 405223cfd52cf4d08b7a1fa2d9ce7e80, type: 2}
+  flightPlans:
+  - destination: {fileID: 11400000, guid: 405223cfd52cf4d08b7a1fa2d9ce7e80, type: 2}
+    flightPath: {fileID: 114591303524467726, guid: ebad1b488d9ae4e14a4fea62f024ed93,
+      type: 2}
+  - destination: {fileID: 11400000, guid: 7874af2ee8ecf48fa9818c8b58ff8b71, type: 2}
+    flightPath: {fileID: 114872763265129816, guid: c856888d229af4c4f91cbfefa4014ef3,
+      type: 2}
+  - destination: {fileID: 11400000, guid: 4cd81a426414d478db9b8bbcf587a888, type: 2}
+    flightPath: {fileID: 114007325005182530, guid: afb0ac596be274100b0f1b5468023f5d,
+      type: 2}
+  - destination: {fileID: 11400000, guid: 60d95b3df87834e2f8fb9219021f3971, type: 2}
+    flightPath: {fileID: 114158597048834228, guid: c87ed58e515194dfeb6ae368c54f78a6,
+      type: 2}
+  - destination: {fileID: 11400000, guid: 578abdee630cd4ac68ed4f2855613765, type: 2}
+    flightPath: {fileID: 114265548454655058, guid: 4e56a6c435f1a4a20b4f0b0fbacc4d4f,
+      type: 2}
