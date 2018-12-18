@@ -9,14 +9,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b9cb27df67dbe4c408b7ee8cccdfe4e2, type: 3}
-  m_Name: Empty Payload
+  m_Name: Station Supplies
   m_EditorClassIdentifier: 
-  payloadName: Test Payload
-  weight: 1
-  launchValue: 1
-  successBonus: 1
+  payloadName: Station Supplies
+  weight: 3
+  launchValue: 8
+  successBonus: 14
   validDestinations:
-  - {fileID: 11400000, guid: 405223cfd52cf4d08b7a1fa2d9ce7e80, type: 2}
+  - {fileID: 11400000, guid: 4cd81a426414d478db9b8bbcf587a888, type: 2}
   completionFlags: []
   preconditions: []
   icon: {fileID: 21300000, guid: 6be9088b28758452ea07923185c980e7, type: 3}

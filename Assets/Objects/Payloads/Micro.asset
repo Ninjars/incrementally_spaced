@@ -9,12 +9,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b9cb27df67dbe4c408b7ee8cccdfe4e2, type: 3}
-  m_Name: Military Payload
+  m_Name: Micro
   m_EditorClassIdentifier: 
-  payloadName: Spy Satellite
-  weight: 5
+  payloadName: Micro-sat Swarm
+  weight: 2
   launchValue: 0
-  successBonus: 20
+  successBonus: 30
   validDestinations:
   - {fileID: 11400000, guid: 7874af2ee8ecf48fa9818c8b58ff8b71, type: 2}
   completionFlags: []
