@@ -18,5 +18,13 @@ MonoBehaviour:
   validDestinations:
   - {fileID: 11400000, guid: 578abdee630cd4ac68ed4f2855613765, type: 2}
   completionFlags: []
-  preconditions: []
+  preconditions:
+  - payload: {fileID: 11400000}
+    count: 0
+    comparison: 1
+    minProgressValue: 50
+  - payload: {fileID: 11400000, guid: 6b31ed83311194336bf210e3916dd44a, type: 2}
+    count: 3
+    comparison: 0
+    minProgressValue: 0
   icon: {fileID: 21300000, guid: 6be9088b28758452ea07923185c980e7, type: 3}

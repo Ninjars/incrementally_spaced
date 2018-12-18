@@ -12,6 +12,7 @@ public class GameState : ScriptableObject {
     public string playerName = "Sergei";
     public float funds = 0;
     private List<ActiveMission> missions = new List<ActiveMission>();
+    private Dictionary<PayloadData, int> deliveredPayloads = new Dictionary<PayloadData, int>();
 
     private int progressStage = 0;
     private GameProgress currentProgress = GameProgress.BEGINNING;
@@ -28,6 +29,17 @@ public class GameState : ScriptableObject {
 
     public void registerMissionCompletion(ActiveMission mission) {
         missions.Remove(mission);
+        var payload = mission.getMissionData().payloadData;
+        
+        int currentCount;
+        deliveredPayloads.TryGetValue(payload, out currentCount); 
+        deliveredPayloads[payload] = currentCount + 1;
+    }
+
+    public int getDeliveredPayloadCount(PayloadData payload) {
+        int currentCount;
+        deliveredPayloads.TryGetValue(payload, out currentCount); 
+        return currentCount;
     }
 
     public GameProgress getCurrentProgress() {

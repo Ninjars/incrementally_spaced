@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,6 +17,15 @@ public class PayloadData : ScriptableObject {
     [Tooltip("Add or increment these values in the game state")]
     public List<string> completionFlags;
     [Tooltip("Game state flag conditions required to use this payload")]
-    public List<ProgressPrecondition> preconditions;
+    public List<PayloadPrecondition> preconditions;
     public Sprite icon;
+
+    internal bool meetsConditions(GameState gameState) {
+        foreach (var condition in preconditions) {
+            if (!condition.isMet(gameState)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
