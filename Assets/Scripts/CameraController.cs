@@ -13,13 +13,6 @@ public class CameraController : MonoBehaviour {
 	private GameState.GameProgress targetProgress;
 	private GameState gameState;
 
-	private bool animating = false;
-	private Vector3 startPosition;
-	private Vector3 endPosition;
-	private float startSize;
-	private float endSize;
-	private float startTime;
-
 	void Start() {
 		gameState = gameStateProvider.getGameState();
 		setupAnimation(GameState.GameProgress.BEGINNING);
@@ -30,13 +23,6 @@ public class CameraController : MonoBehaviour {
 			targetProgress = gameState.getCurrentProgress();
 			setupAnimation(targetProgress);
 		}
-	}
-
-	private void updatePosition() {
-		float deltaT = Time.time - startTime;
-		float fraction = deltaT / animationDuration;
-		transform.position = Vector3.Lerp(startPosition, endPosition, fraction);
-		cam.orthographicSize = Mathf.Lerp(startSize, endSize, fraction);
 	}
 
 	private void setupAnimation(GameState.GameProgress newProgress) {
