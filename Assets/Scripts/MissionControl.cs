@@ -75,6 +75,7 @@ public class MissionControl : MonoBehaviour {
 
         FlightPlan flightPlan = registry.flightPlans.Where(plan => plan.destination == mission.destinationData).First();
         Rocket rocket = GameObject.Instantiate(mission.rocketData.rocketObject);
+        rocket.setSprite(mission.rocketData.icon);
 
         var activeMission = new ActiveMission(this, rocket, mission, Time.time, flightPlan);
         gameState.registerActiveMission(activeMission);
