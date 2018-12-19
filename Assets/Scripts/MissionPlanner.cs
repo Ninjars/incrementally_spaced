@@ -51,13 +51,14 @@ public class MissionPlanner : MonoBehaviour {
 		updatePlan();
 	}
 
-	private void addItem(RectTransform parent, ToggleGroup group, Sprite icon, string name, string one, string two, string three, UnityAction<Boolean> call) {
+	private void addItem(RectTransform parent, ToggleGroup group, Sprite icon, string name, string one, string two, string three, UnityAction<Boolean> call, bool toggled = false) {
 		ListItemUI item = Instantiate(listItem);
 		item.transform.SetParent(parent, false);
 		item.setData(name, icon, one, two, three);
 		var toggle = item.GetComponent<Toggle>();
-		toggle.onValueChanged.AddListener(call);
 		toggle.group = group;
+		toggle.isOn = toggled;
+		toggle.onValueChanged.AddListener(call);
 	}
 
 	private void setSelectedRocket(RocketData data, bool isToggled) {
@@ -66,6 +67,7 @@ public class MissionPlanner : MonoBehaviour {
 		} else {
 			if (plannedMission.rocket == data) plannedMission.rocket = null;
 		}
+		updatePayloads();
 		updateDestinations();
 		updatePlan();
 	}
@@ -75,28 +77,54 @@ public class MissionPlanner : MonoBehaviour {
 			GameObject.Destroy(child.gameObject);
 		}
 		var destinations = getAvailableDestinations(plannedMission.rocket, plannedMission.payload);
-		
-		foreach (var destination in destinations) {
-			addItem(destinationList, destinationToggleGroup, destination.icon, destination.displayName, "Required Power: " + destination.requiredPower, "Duration: " + destination.baseMissionDuration, null, (isToggled) => setSelectedDestination(destination, isToggled));
+		if (destinations.Count() == 1) {
+			plannedMission.destination = destinations.First();
 		}
+		if (plannedMission.destination != null && !destinations.Contains(plannedMission.destination)) {
+			plannedMission.destination = null;
+		}
+		foreach (var destination in destinations) {
+			var toggled = plannedMission.destination != null && destination == plannedMission.destination;
+			addItem(destinationList, destinationToggleGroup, destination.icon, destination.displayName, "Required Power: " + destination.requiredPower, "Duration: " + destination.baseMissionDuration, null, (isToggled) => setSelectedDestination(destination, isToggled), toggled);
+		}
+    }
+
+    private IEnumerable<DestinationData> getAvailableDestinations(RocketData rocket, PayloadData payload) {
+		if (rocket == null || payload == null) return Enumerable.Empty<DestinationData>();
+        int excessRocketPower = rocket.power - payload.weight;
+        return registry.destinations
+				.Where(destination => payload.validDestinations.Contains(destination))
+				.OrderBy(arg => arg.requiredPower);
     }
 
 	private void updatePayloads() {
         foreach (Transform child in payloadList.transform) {
 			GameObject.Destroy(child.gameObject);
 		}
-		foreach (var payload in registry.payloads.Where(arg => arg.meetsConditions(gameState)).OrderBy(arg => arg.weight)) {
-			addItem(payloadList, payloadToggleGroup, payload.icon, payload.payloadName, "Weight: " + payload.weight, "Value: " + payload.launchValue, "Bonus: " + payload.successBonus, (isToggled) => setSelectedPayload(payload, isToggled));
+		if (plannedMission.rocket == null) return;
+
+		var availablePayloads = getAvailablePayloads(plannedMission.rocket).Where(arg => arg.meetsConditions(gameState)).OrderBy(arg => arg.weight);
+		if (availablePayloads.Count() == 1) {
+			plannedMission.payload = availablePayloads.First();
+		}
+		if (plannedMission.payload != null && !availablePayloads.Contains(plannedMission.payload)) {
+			plannedMission.payload = null;
+		}
+		foreach (var payload in availablePayloads) {
+			var toggled = plannedMission.payload != null && payload == plannedMission.payload;
+			addItem(payloadList, payloadToggleGroup, payload.icon, payload.payloadName, "Weight: " + payload.weight, "Value: " + payload.launchValue, "Bonus: " + payload.successBonus, (isToggled) => setSelectedPayload(payload, isToggled), toggled);
 		}
 	}
 
-    private IEnumerable<DestinationData> getAvailableDestinations(RocketData rocket, PayloadData payload) {
-		if (rocket == null || payload == null) return Enumerable.Empty<DestinationData>();
-        int excessRocketPower = rocket.power - payload.weight;
-        return registry.destinations
-				.Where(destination => payload.validDestinations.Contains(destination) && destination.requiredPower <= excessRocketPower)
-				.OrderBy(arg => arg.requiredPower);
+    private IEnumerable<PayloadData> getAvailablePayloads(RocketData rocket) {
+		if (rocket == null) return Enumerable.Empty<PayloadData>();
+        return registry.payloads
+				.Where(arg => rocket.power - arg.weight - minPayloadDestinationPower(arg) >= 0);
     }
+
+	private int minPayloadDestinationPower(PayloadData payload) {
+		return payload.validDestinations.Min(arg => arg.requiredPower);
+	}
 
     private void setSelectedPayload(PayloadData data, bool isToggled) {
 		if (isToggled) {
@@ -104,6 +132,7 @@ public class MissionPlanner : MonoBehaviour {
 		} else {
 			if (plannedMission.payload == data) plannedMission.payload = null;
 		}
+		updatePayloads();
 		updateDestinations();
 		updatePlan();
 	}
