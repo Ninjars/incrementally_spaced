@@ -23,4 +23,4 @@ MonoBehaviour:
     count: 1
     comparison: 0
     minProgressValue: 0
-  icon: {fileID: 21300000, guid: 6be9088b28758452ea07923185c980e7, type: 3}
+  icon: {fileID: 21300000, guid: e278934a56e33467f871030ba8acd5a6, type: 3}

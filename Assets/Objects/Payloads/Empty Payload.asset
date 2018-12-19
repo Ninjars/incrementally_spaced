@@ -19,4 +19,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 405223cfd52cf4d08b7a1fa2d9ce7e80, type: 2}
   completionFlags: []
   preconditions: []
-  icon: {fileID: 21300000, guid: 6be9088b28758452ea07923185c980e7, type: 3}
+  icon: {fileID: 21300000, guid: 48f72396dc5104c9d98cdb06562e644c, type: 3}

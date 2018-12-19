@@ -7,6 +7,11 @@ public class Rocket : MonoBehaviour {
 
 	public ExplosionMat explosion;
 	private ExplosionMat explosionInstance;
+	private SpriteRenderer spriteRenderer;
+
+	void Awake() {
+		spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+	}
 
 	internal void onMissionComplete() {
 		Destroy(gameObject);
@@ -16,8 +21,8 @@ public class Rocket : MonoBehaviour {
 		explosionInstance = Instantiate(explosion);
 		explosionInstance._alpha = 0;
 		explosionInstance.transform.position = transform.position;
-		GetComponentInChildren<SpriteRenderer>().enabled = false;
-		
+		spriteRenderer.enabled = false;
+
 		iTween.ValueTo(gameObject, iTween.Hash(
 			"from", 1,
 			"to", 0,
@@ -35,5 +40,9 @@ public class Rocket : MonoBehaviour {
 
 	public void updateExplosionAlpha(float alpha) {
 		explosionInstance._alpha = alpha;
+	}
+
+	internal void setSprite(Sprite icon) {
+		spriteRenderer.sprite = icon;
 	}
 }
