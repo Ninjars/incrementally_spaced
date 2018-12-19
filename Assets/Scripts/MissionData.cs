@@ -8,6 +8,7 @@ public class MissionData : ScriptableObject {
     public DestinationData destinationData;
     
     public float getDurationSeconds() {
+        if (destinationData.requiredPower == 0) return destinationData.baseMissionDuration;
         float powerFactor = Mathf.Min(3, Mathf.Max(1, (rocketData.power - payloadData.weight) / (float) destinationData.requiredPower));
         return (destinationData.baseMissionDuration / powerFactor);
     }
