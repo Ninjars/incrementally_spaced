@@ -14,6 +14,7 @@ public class MissionControl : MonoBehaviour {
     public Text fundsReadout;
     public Text missionsReadout;
     public RectTransform creditsScreen;
+    public CanvasGroup explodedRocketMessage;
     public Button creditsButton;
 
     private GameState gameState;
@@ -29,6 +30,9 @@ public class MissionControl : MonoBehaviour {
     void Update() {
         fundsReadout.text = "Available funds: " + gameState.funds;
         missionsReadout.text = buildActiveMissionsString();
+        if (explodedRocketMessage.alpha > 0) {
+            explodedRocketMessage.alpha -= (Time.deltaTime / 5);
+        }
     }
 
     private string buildActiveMissionsString() {
@@ -98,6 +102,7 @@ public class MissionControl : MonoBehaviour {
         yield return new WaitForSeconds(delay);
         gameState.registerMissionFailure(activeMission);
         activeMission.explode();
+        explodedRocketMessage.alpha = 1;
     }
 
     internal void onMissionComplete(ActiveMission activeMission) {
