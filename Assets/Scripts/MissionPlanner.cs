@@ -176,6 +176,11 @@ public class MissionPlanner : MonoBehaviour {
 		if (missionBonus > 0) {
 			addDetail(detailsList, "Success Bonus Funds:", missionBonus.ToString(), Color.white);
 		}
+		var value = missionBonus - plannedCost;
+		addDetail(detailsList, "Total Mission Funds:", value.ToString(), 
+				value >= 0 ? Color.green 
+				: value < 0 ? Color.red
+				: Color.white);
 		var power = (plan.rocket == null ? 0 : plan.rocket.power) 
 					- (plan.payload == null ? 0 : plan.payload.weight) 
 					- (plan.destination == null ? 0 : plan.destination.requiredPower);
