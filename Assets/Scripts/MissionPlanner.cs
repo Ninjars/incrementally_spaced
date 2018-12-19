@@ -85,7 +85,7 @@ public class MissionPlanner : MonoBehaviour {
 		}
 		foreach (var destination in destinations) {
 			var toggled = plannedMission.destination != null && destination == plannedMission.destination;
-			addItem(destinationList, destinationToggleGroup, destination.icon, destination.displayName, "Required Power: " + destination.requiredPower, "Duration: " + destination.baseMissionDuration, null, (isToggled) => setSelectedDestination(destination, isToggled), toggled);
+			addItem(destinationList, destinationToggleGroup, destination.icon, destination.displayName, "Duration: " + destination.baseMissionDuration, null, null, (isToggled) => setSelectedDestination(destination, isToggled), toggled);
 		}
     }
 
@@ -171,21 +171,21 @@ public class MissionPlanner : MonoBehaviour {
 		var plannedCost = (plan.rocket == null ? 0 : plan.rocket.launchCost)
 						 - (plan.payload == null ? 0 : plan.payload.launchValue);
 		var missionBonus = plan.payload == null ? 0 : plan.payload.successBonus;
-		addDetail(detailsList, "Available Funds:", gameState.funds.ToString(), true);
-		addDetail(detailsList, "Funds from Launch:", (-plannedCost).ToString(), plannedCost <= gameState.funds);
+		addDetail(detailsList, "Available Funds:", gameState.funds.ToString(), Color.white);
+		addDetail(detailsList, "Funds from Launch:", (-plannedCost).ToString(), plannedCost <= gameState.funds ? Color.green : Color.white);
 		if (missionBonus > 0) {
-			addDetail(detailsList, "Success Bonus Funds:", missionBonus.ToString(), true);
+			addDetail(detailsList, "Success Bonus Funds:", missionBonus.ToString(), Color.white);
 		}
 		var power = (plan.rocket == null ? 0 : plan.rocket.power) 
 					- (plan.payload == null ? 0 : plan.payload.weight) 
 					- (plan.destination == null ? 0 : plan.destination.requiredPower);
-		addDetail(detailsList, "Available power:", power.ToString(), power >= 0);
+		addDetail(detailsList, "Available power:", power.ToString(), power >= 0 ? Color.green : Color.red);
     }
 
-	private void addDetail(RectTransform parent, string label, string value, bool valid) {
+	private void addDetail(RectTransform parent, string label, string value, Color color) {
 		PlanDetailsItemUI item = Instantiate(detailsItem);
 		item.transform.SetParent(parent, false);
-		item.setData(label, value, valid);
+		item.setData(label, value, color);
 	}
 
 	private void setLaunchStateForMissionData(MissionData missionData) {

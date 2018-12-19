@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,14 +11,17 @@ public class MissionControl : MonoBehaviour {
     public GameStateProvider gameStateProvider;
     public MissionPlanner missionPlanner;
     public Button startPlanningButton;
-    public TMP_Text fundsReadout;
-    public TMP_Text missionsReadout;
+    public Text fundsReadout;
+    public Text missionsReadout;
+    public RectTransform creditsScreen;
+    public Button creditsButton;
 
     private GameState gameState;
 
     void Start() {
         startPlanningButton.onClick.AddListener(() => startPlanningMission());
         gameState = gameStateProvider.getGameState();
+        creditsButton.onClick.AddListener(() => toggleCredits());
     }
 
     void Update() {
@@ -42,6 +44,7 @@ public class MissionControl : MonoBehaviour {
         startPlanningButton.gameObject.SetActive(false);
         fundsReadout.gameObject.SetActive(false);
         missionsReadout.gameObject.SetActive(false);
+        creditsButton.gameObject.SetActive(false);
     }
 
     private void setUiModeMissionControl() {
@@ -49,6 +52,7 @@ public class MissionControl : MonoBehaviour {
         startPlanningButton.gameObject.SetActive(true);
         fundsReadout.gameObject.SetActive(true);
         missionsReadout.gameObject.SetActive(true);
+        creditsButton.gameObject.SetActive(true);
     }
 
     public void startPlanningMission() {
@@ -92,5 +96,15 @@ public class MissionControl : MonoBehaviour {
 
     public void debugAdvanceGameStage() {
         gameState.registerProgress(gameState.getCurrentProgressValue() + 10);
+    }
+
+    public void toggleCredits() {
+        if (creditsScreen.gameObject.activeSelf) {
+            creditsScreen.gameObject.SetActive(false);
+            startPlanningButton.gameObject.SetActive(true);
+        } else {
+            creditsScreen.gameObject.SetActive(true);
+            startPlanningButton.gameObject.SetActive(false);
+        }
     }
 }
