@@ -8,6 +8,7 @@ public class ActiveMission {
     private MissionControl missionControl;
     private MissionData missionData;
     private float startTime;
+    private float duration;
     private FlightPlan flightPlan;
 
     public ActiveMission(MissionControl missionControl, Rocket rocket, MissionData mission, float realtimeSinceStartup, FlightPlan flightPlan) {
@@ -17,6 +18,11 @@ public class ActiveMission {
         startTime = realtimeSinceStartup;
         this.flightPlan = flightPlan;
         rocket.transform.position = flightPlan.flightPath.nodes[0];
+        duration = mission.getDurationSeconds();
+    }
+
+    public float remainingMissionDuration() {
+        return duration - (Time.time - startTime);
     }
 
     public void launch() {

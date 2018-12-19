@@ -23,6 +23,10 @@ public class GameState : ScriptableObject {
         currentProgress = updateCurrentProgress();
     }
 
+    public List<ActiveMission> GetActiveMissions() {
+        return missions;
+    }
+
     public void registerActiveMission(ActiveMission mission) {
         missions.Add(mission);
     }
