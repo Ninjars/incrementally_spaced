@@ -39,14 +39,20 @@ public class MissionPlanner : MonoBehaviour {
     void OnEnable() {
 		gameState = gameStateProvider.getGameState();
 		plannedMission = new WipMission();
+		updateRockets();
 		updatePayloads();
 		updatePlan();
 	}
 
-	void Start() {
+	void updateRockets() {
 		foreach (var rocket in registry.rockets.OrderBy(arg => arg.power)) {
-			addItem(rocketList, rocketToggleGroup, rocket.icon, rocket.rocketName, "Power: " + rocket.power, "Cost: " + rocket.launchCost, null, (isToggled) => setSelectedRocket(rocket, isToggled));
+			float launchSuccessChance = rocket.getLaunchChance(gameState.getTotalLaunchCount());
+			int successValue = Convert.ToInt32(Math.Floor(launchSuccessChance * 100));
+			addItem(rocketList, rocketToggleGroup, rocket.icon, rocket.rocketName, "Power: " + rocket.power, "Cost: " + rocket.launchCost, "Success %: " + successValue, (isToggled) => setSelectedRocket(rocket, isToggled));
 		}
+	}
+
+	void Start() {
 		plannedMission = new WipMission();
 		updatePlan();
 	}
