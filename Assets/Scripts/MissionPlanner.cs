@@ -158,6 +158,9 @@ public class MissionPlanner : MonoBehaviour {
 		} else {
 			setLaunchStateForMissionData(missionData);
 		}
+	}
+
+	void Update() {
 		updatePlanDetailsUI(plannedMission);
 	}
 
