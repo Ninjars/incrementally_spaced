@@ -56,8 +56,8 @@ MonoBehaviour:
   nodes:
   - {x: 2.7646728, y: 1.7789769, z: 0}
   - {x: 8.017196, y: 3.0046816, z: 0}
-  - {x: 10.704998, y: 1.5877192, z: 0}
-  - {x: 11, y: 0, z: 0}
+  - {x: 10.293083, y: 1.5877192, z: 0}
+  - {x: 10.5, y: 0, z: 0}
   nodeCount: 4
   initialized: 1
   initialName: New Path 1
