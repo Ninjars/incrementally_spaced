@@ -1,42 +1,76 @@
-using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.UI;
 using System.Linq;
+using System.Text;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class MissionControl : MonoBehaviour {
     public Registry registry;
     public GameStateProvider gameStateProvider;
     public MissionPlanner missionPlanner;
     public Button startPlanningButton;
+    public Text fundsReadout;
+    public Text missionsReadout;
+    public RectTransform creditsScreen;
+    public Button creditsButton;
 
     private GameState gameState;
 
     void Start() {
         startPlanningButton.onClick.AddListener(() => startPlanningMission());
         gameState = gameStateProvider.getGameState();
+        creditsButton.onClick.AddListener(() => toggleCredits());
+    }
+
+    void Update() {
+        fundsReadout.text = "Available funds: " + gameState.funds;
+        missionsReadout.text = buildActiveMissionsString();
+    }
+
+    private string buildActiveMissionsString() {
+        StringBuilder stringBuilder = new StringBuilder("Active Missions:");
+        foreach (var mission in gameState.GetActiveMissions()) {
+            var data = mission.getMissionData();
+            stringBuilder.Append("\n" + data.rocketData.rocketName + " : " + data.payloadData.payloadName + " : " + data.destinationData.displayName);
+            stringBuilder.Append("\n        >> T-" + mission.remainingMissionDuration().ToString("0.0"));
+        }
+        return stringBuilder.ToString();
+    }
+
+    private void setUiModePlanning() {
+        missionPlanner.gameObject.SetActive(true);
+        startPlanningButton.gameObject.SetActive(false);
+        fundsReadout.gameObject.SetActive(false);
+        missionsReadout.gameObject.SetActive(false);
+        creditsButton.gameObject.SetActive(false);
+    }
+
+    private void setUiModeMissionControl() {
+        missionPlanner.gameObject.SetActive(false);
+        startPlanningButton.gameObject.SetActive(true);
+        fundsReadout.gameObject.SetActive(true);
+        missionsReadout.gameObject.SetActive(true);
+        creditsButton.gameObject.SetActive(true);
     }
 
     public void startPlanningMission() {
-        missionPlanner.gameObject.SetActive(true);
-        startPlanningButton.gameObject.SetActive(false);
+        setUiModePlanning();
     }
 
     public void cancelPlanningMission() {
-        missionPlanner.gameObject.SetActive(false);
-        startPlanningButton.gameObject.SetActive(true);
+        setUiModeMissionControl();
     }
 
     public void launchMission(MissionData mission) {
         Debug.Log("launchMission: " + mission);
-        missionPlanner.gameObject.SetActive(false);
-        startPlanningButton.gameObject.SetActive(true);
-        
+        setUiModeMissionControl();
+
         FlightPlan flightPlan = registry.flightPlans.Where(plan => plan.destination == mission.destinationData).First();
         Rocket rocket = GameObject.Instantiate(mission.rocketData.rocketObject);
-        
-        var activeMission = new ActiveMission(this, rocket, mission, Time.realtimeSinceStartup, flightPlan);
+
+        var activeMission = new ActiveMission(this, rocket, mission, Time.time, flightPlan);
         gameState.registerActiveMission(activeMission);
         gameState.funds -= mission.getCost();
         gameState.registerProgress(mission.destinationData.progressionValue);
@@ -62,5 +96,15 @@ public class MissionControl : MonoBehaviour {
 
     public void debugAdvanceGameStage() {
         gameState.registerProgress(gameState.getCurrentProgressValue() + 10);
+    }
+
+    public void toggleCredits() {
+        if (creditsScreen.gameObject.activeSelf) {
+            creditsScreen.gameObject.SetActive(false);
+            startPlanningButton.gameObject.SetActive(true);
+        } else {
+            creditsScreen.gameObject.SetActive(true);
+            startPlanningButton.gameObject.SetActive(false);
+        }
     }
 }
