@@ -17,11 +17,13 @@ public class MissionControl : MonoBehaviour {
     public Button creditsButton;
 
     private GameState gameState;
+    private System.Random random;
 
     void Start() {
         startPlanningButton.onClick.AddListener(() => startPlanningMission());
         gameState = gameStateProvider.getGameState();
         creditsButton.onClick.AddListener(() => toggleCredits());
+        random = new System.Random();
     }
 
     void Update() {
@@ -34,7 +36,7 @@ public class MissionControl : MonoBehaviour {
         foreach (var mission in gameState.GetActiveMissions()) {
             var data = mission.getMissionData();
             stringBuilder.Append("\n" + data.rocketData.rocketName + " : " + data.payloadData.payloadName + " : " + data.destinationData.displayName);
-            stringBuilder.Append("\n        >> T-" + mission.remainingMissionDuration().ToString("0.0"));
+            stringBuilder.Append("\n>> T-" + mission.remainingMissionDuration().ToString("0.0"));
         }
         return stringBuilder.ToString();
     }
@@ -75,6 +77,27 @@ public class MissionControl : MonoBehaviour {
         gameState.funds -= mission.getCost();
         gameState.registerProgress(mission.destinationData.progressionValue);
         activeMission.launch();
+
+        if (missionWillFail(mission)) {
+            float explodeAfter = mission.getDurationSeconds() * 0.1f * Convert.ToSingle(random.NextDouble());
+            StartCoroutine(failMission(activeMission, explodeAfter));
+        }
+    }
+
+    private bool missionWillFail(MissionData mission) {
+        float launchSuccessChance = mission.rocketData.getLaunchChance(gameState.getTotalLaunchCount());
+        if (launchSuccessChance < 1) {
+            var randomVal = random.NextDouble();
+            return launchSuccessChance < randomVal;
+        } else {
+            return false;
+        }
+    }
+
+    private IEnumerator failMission(ActiveMission activeMission, float delay) {
+        yield return new WaitForSeconds(delay);
+        gameState.registerMissionFailure(activeMission);
+        activeMission.explode();
     }
 
     internal void onMissionComplete(ActiveMission activeMission) {

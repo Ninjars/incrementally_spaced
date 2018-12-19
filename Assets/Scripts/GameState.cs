@@ -14,6 +14,8 @@ public class GameState : ScriptableObject {
     private List<ActiveMission> missions = new List<ActiveMission>();
     private Dictionary<PayloadData, int> deliveredPayloads = new Dictionary<PayloadData, int>();
 
+    private int totalLaunchAttempts = 0;
+    private int totalMissionSuccesses = 0;
     private int progressStage = 0;
     private GameProgress currentProgress = GameProgress.BEGINNING;
 
@@ -28,23 +30,33 @@ public class GameState : ScriptableObject {
     }
 
     public void registerActiveMission(ActiveMission mission) {
+        totalLaunchAttempts++;
         missions.Add(mission);
     }
 
+    public void registerMissionFailure(ActiveMission mission) {
+        missions.Remove(mission);
+    }
+
     public void registerMissionCompletion(ActiveMission mission) {
+        totalMissionSuccesses++;
         missions.Remove(mission);
         var payload = mission.getMissionData().payloadData;
-        
+
         int currentCount;
-        deliveredPayloads.TryGetValue(payload, out currentCount); 
+        deliveredPayloads.TryGetValue(payload, out currentCount);
         deliveredPayloads[payload] = currentCount + 1;
     }
 
     public int getDeliveredPayloadCount(PayloadData payload) {
         if (payload == null) return 0;
         int currentCount;
-        deliveredPayloads.TryGetValue(payload, out currentCount); 
+        deliveredPayloads.TryGetValue(payload, out currentCount);
         return currentCount;
+    }
+
+    internal int getTotalLaunchCount() {
+        return totalLaunchAttempts;
     }
 
     public GameProgress getCurrentProgress() {

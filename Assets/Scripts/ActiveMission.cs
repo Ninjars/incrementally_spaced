@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -44,5 +45,10 @@ public class ActiveMission {
 
     public MissionData getMissionData() {
         return missionData;
+    }
+
+    internal void explode() {
+        iTween.Stop(rocket.gameObject);
+        rocket.explode();
     }
 }
