@@ -14,6 +14,8 @@ public class PayloadData : ScriptableObject {
     public int successBonus;
     [Tooltip("Destinations this payload can be delivered to")]
     public List<DestinationData> validDestinations;
+    [Tooltip("Should create object on successful mission")]
+    public bool deployOnSuccess;
     [Tooltip("Add or increment these values in the game state")]
     public List<string> completionFlags;
     [Tooltip("Game state flag conditions required to use this payload")]

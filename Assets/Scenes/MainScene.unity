@@ -3451,6 +3451,8 @@ MonoBehaviour:
   creditsScreen: {fileID: 1199455912}
   explodedRocketMessage: {fileID: 1288163842}
   creditsButton: {fileID: 1904321223}
+  satellitePrefab: {fileID: 212025889785122090, guid: 5fd1368602a6a43f9a7a37f549e0bce8,
+    type: 2}
 --- !u!4 &1730610258
 Transform:
   m_ObjectHideFlags: 0

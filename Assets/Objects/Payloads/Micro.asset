@@ -17,6 +17,7 @@ MonoBehaviour:
   successBonus: 30
   validDestinations:
   - {fileID: 11400000, guid: 7874af2ee8ecf48fa9818c8b58ff8b71, type: 2}
+  deployOnSuccess: 1
   completionFlags: []
   preconditions:
   - payload: {fileID: 11400000, guid: a4ca2f1bc3ee04e27a942cb73a1dffbd, type: 2}

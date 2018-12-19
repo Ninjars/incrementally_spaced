@@ -16,6 +16,7 @@ public class MissionControl : MonoBehaviour {
     public RectTransform creditsScreen;
     public CanvasGroup explodedRocketMessage;
     public Button creditsButton;
+    public SpriteRenderer satellitePrefab;
 
     private GameState gameState;
     private System.Random random;
@@ -107,12 +108,19 @@ public class MissionControl : MonoBehaviour {
     }
 
     internal void onMissionComplete(ActiveMission activeMission) {
+        var missionEndPosition = activeMission.getRocket().transform.position;
         activeMission.getRocket().onMissionComplete();
         var data = activeMission.getMissionData();
         Debug.Log("onMissionComplete: " + data);
         var completionBonus = data.payloadData.successBonus;
         gameState.registerMissionCompletion(activeMission);
         gameState.funds += completionBonus;
+
+        if (data.payloadData.deployOnSuccess) {
+            var satellite = Instantiate(satellitePrefab);
+            satellite.sprite = data.payloadData.icon;
+            satellite.transform.position = missionEndPosition + new Vector3(Convert.ToSingle(2 * random.NextDouble() - 1), Convert.ToSingle(2 * random.NextDouble() - 1), 0);
+        }
     }
 
     public MissionData buildMission(RocketData rocket, PayloadData payload, DestinationData destination) {
