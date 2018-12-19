@@ -2620,7 +2620,8 @@ MonoBehaviour:
     m_LineSpacing: 1
   m_Text: "Credits:\n\n> Design and Development by Jeremy Stevens\n\n> Planet graphics
     by DinV Studio\n\n> Icon graphics made by Freepik, Eucalyp, \n  and Monkik from
-    www.flaticon.com\n\n> Other icons from Game-icons.net"
+    www.flaticon.com\n\n> Other icons from Game-icons.net\n\n> Telegrama font designed
+    by Yamaoka Yasuhiro 1992"
 --- !u!222 &1415175637
 CanvasRenderer:
   m_ObjectHideFlags: 0
