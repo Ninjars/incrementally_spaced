@@ -45,9 +45,12 @@ public class MissionPlanner : MonoBehaviour {
 	}
 
 	void updateRockets() {
+        foreach (Transform child in rocketList.transform) {
+			GameObject.Destroy(child.gameObject);
+		}
 		foreach (var rocket in registry.rockets.OrderBy(arg => arg.power)) {
 			float launchSuccessChance = rocket.getLaunchChance(gameState.getTotalLaunchCount());
-			int successValue = Convert.ToInt32(Math.Floor(launchSuccessChance * 100));
+			int successValue = Math.Min(100, (int) Math.Floor(launchSuccessChance * 100));
 			addItem(rocketList, rocketToggleGroup, rocket.icon, rocket.rocketName, "Power: " + rocket.power, "Cost: " + rocket.launchCost, "Success %: " + successValue, (isToggled) => setSelectedRocket(rocket, isToggled));
 		}
 	}

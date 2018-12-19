@@ -79,14 +79,16 @@ public class MissionControl : MonoBehaviour {
         activeMission.launch();
 
         if (missionWillFail(mission)) {
-            StartCoroutine(failMission(activeMission, mission.getDurationSeconds() * 0.1f * Convert.ToSingle(random.NextDouble())));
+            float explodeAfter = mission.getDurationSeconds() * 0.1f * Convert.ToSingle(random.NextDouble());
+            StartCoroutine(failMission(activeMission, explodeAfter));
         }
     }
 
     private bool missionWillFail(MissionData mission) {
         float launchSuccessChance = mission.rocketData.getLaunchChance(gameState.getTotalLaunchCount());
         if (launchSuccessChance < 1) {
-            return launchSuccessChance > random.NextDouble();
+            var randomVal = random.NextDouble();
+            return launchSuccessChance < randomVal;
         } else {
             return false;
         }
@@ -95,7 +97,7 @@ public class MissionControl : MonoBehaviour {
     private IEnumerator failMission(ActiveMission activeMission, float delay) {
         yield return new WaitForSeconds(delay);
         gameState.registerMissionFailure(activeMission);
-        activeMission.getRocket().explode();
+        activeMission.explode();
     }
 
     internal void onMissionComplete(ActiveMission activeMission) {

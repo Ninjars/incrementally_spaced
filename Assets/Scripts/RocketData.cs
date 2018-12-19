@@ -15,6 +15,6 @@ public class RocketData : ScriptableObject {
     public Rocket rocketObject;
 
     internal float getLaunchChance(int launchCount) {
-        return (launchCount + 1) / (float) complexity;
+        return (launchCount + 1f) / (float) complexity;
     }
 }
