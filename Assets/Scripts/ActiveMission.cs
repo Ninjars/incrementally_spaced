@@ -20,6 +20,7 @@ public class ActiveMission {
     }
 
     public void launch() {
+        Debug.Log("launch ActiveMission time " + missionData.getDurationSeconds());
         iTween.MoveTo(rocket.gameObject, iTween.Hash(
                     "path", flightPlan.flightPath.nodes.ToArray(), 
                     "time", missionData.getDurationSeconds(),

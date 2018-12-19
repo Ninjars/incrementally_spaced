@@ -29,6 +29,7 @@ public class MissionControl : MonoBehaviour {
     }
 
     public void launchMission(MissionData mission) {
+        Debug.Log("launchMission: " + mission);
         missionPlanner.gameObject.SetActive(false);
         startPlanningButton.gameObject.SetActive(true);
         
@@ -45,6 +46,7 @@ public class MissionControl : MonoBehaviour {
     internal void onMissionComplete(ActiveMission activeMission) {
         activeMission.getRocket().onMissionComplete();
         var data = activeMission.getMissionData();
+        Debug.Log("onMissionComplete: " + data);
         var completionBonus = data.payloadData.successBonus;
         gameState.registerMissionCompletion(activeMission);
         gameState.funds += completionBonus;
