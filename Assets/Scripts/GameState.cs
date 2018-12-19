@@ -37,6 +37,7 @@ public class GameState : ScriptableObject {
     }
 
     public int getDeliveredPayloadCount(PayloadData payload) {
+        if (payload == null) return 0;
         int currentCount;
         deliveredPayloads.TryGetValue(payload, out currentCount); 
         return currentCount;
